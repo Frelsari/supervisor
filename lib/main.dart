@@ -255,9 +255,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         FlatButton(
                           child: Text('是'),
                           onPressed: () {
-                            Firestore.instance
+                            firestore
                                 .collection('NTUTLab321')
-                                .document(documentSnapshot.documentID)
+                                .doc(documentSnapshot.id)
                                 .delete();
                             Navigator.pop(context);
                           },
@@ -342,10 +342,9 @@ class _MyHomePageState extends State<MyHomePage> {
           FlatButton(
             child: Text('是'),
             onPressed: () {
-              Firestore.instance.collection('NTUTLab321').getDocuments().then(
+              firestore.collection('NTUTLab321').get().then(
                 (snapshot) {
-                  for (DocumentSnapshot documentSnapshot
-                      in snapshot.documents) {
+                  for (DocumentSnapshot documentSnapshot in snapshot.docs) {
                     documentSnapshot.reference.delete();
                   }
                 },
