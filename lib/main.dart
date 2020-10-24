@@ -119,52 +119,54 @@ class _MyHomePageState extends State<MyHomePage> {
             )
           ],
         ),
-        body: Center(
-          child: Container(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _stream(choose), //根據所需的項目排序，選擇stream
-              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (snapshot.hasError) {
-                  //如果資料格式不符程式所需，印出錯誤
-                  return Text('Error: ${snapshot.error}');
-                }
-                switch (snapshot.connectionState) {
-                  case ConnectionState.waiting: //連接雲端中
-                    return Text('連接中...');
-                  default: //顯示雲端內的資料
-                    return ListView(
-                      children: <Widget>[
-                        DataTable(
-                          columnSpacing: 1.0,
-                          columns: <DataColumn>[
-                            DataColumn(
-                              label: Text('設備編號'),
-                            ),
-                            DataColumn(
-                              label: Text('模式'),
-                            ),
-                            DataColumn(
-                              label: Text('狀態'),
-                            ),
-                            DataColumn(
-                              label: Text('電量'),
-                            ),
-                            /*DataColumn(
-                              label: Text('光譜圖'),
-                            ),*/
-                            DataColumn(
-                              label: Text('工作狀態'),
-                            ),
-                            DataColumn(
-                              label: Text('資料刪除'),
-                            )
-                          ],
-                          rows: createRows(snapshot.data),
-                        ),
-                      ],
-                    );
-                }
-              },
+        body: SafeArea(
+          child: Center(
+            child: Container(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _stream(choose), //根據所需的項目排序，選擇stream
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    //如果資料格式不符程式所需，印出錯誤
+                    return Text('Error: ${snapshot.error}');
+                  }
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting: //連接雲端中
+                      return Text('連接中...');
+                    default: //顯示雲端內的資料
+                      return ListView(
+                        children: <Widget>[
+                          DataTable(
+                            columnSpacing: 1.0,
+                            columns: <DataColumn>[
+                              DataColumn(
+                                label: Text('設備編號'),
+                              ),
+                              DataColumn(
+                                label: Text('模式'),
+                              ),
+                              DataColumn(
+                                label: Text('狀態'),
+                              ),
+                              DataColumn(
+                                label: Text('電量'),
+                              ),
+                              /*DataColumn(
+                                label: Text('光譜圖'),
+                              ),*/
+                              DataColumn(
+                                label: Text('工作狀態'),
+                              ),
+                              DataColumn(
+                                label: Text('資料刪除'),
+                              )
+                            ],
+                            rows: createRows(snapshot.data),
+                          ),
+                        ],
+                      );
+                  }
+                },
+              ),
             ),
           ),
         ),
