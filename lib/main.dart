@@ -279,7 +279,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return list;
   }
 
-  void check() async {
+  Future<void> check() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       return showDialog(
