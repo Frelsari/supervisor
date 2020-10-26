@@ -4,6 +4,7 @@ import 'package:firevisor/api.dart';
 class UserRepository {
   final FirebaseAuth _auth;
   final String _address = "@vghtpe.tw";
+  String _jwtToken;
 
   UserRepository({
     FirebaseAuth firebaseAuth,
@@ -18,9 +19,8 @@ class UserRepository {
         email: username + _address,
         password: password,
       );
-      final String jwtToken = await getJwtToken();
-      print(jwtToken);
-      final Map userData = await getUserData(jwtToken);
+      _jwtToken = await _auth.currentUser.getIdToken();
+      final Map userData = await getUserData(_jwtToken);
       return userData;
     } on Exception catch (e) {
       print(e);
@@ -38,9 +38,9 @@ class UserRepository {
     return _auth.currentUser != null;
   }
 
-  Future<String> getJwtToken() async {
+  String getJwtToken() {
     if (_auth.currentUser != null) {
-      return await _auth.currentUser.getIdToken();
+      return _jwtToken;
     }
     return null;
   }

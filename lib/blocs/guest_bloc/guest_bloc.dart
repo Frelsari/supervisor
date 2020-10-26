@@ -39,7 +39,7 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     String expireTime,
     String position,
   ) async* {
-    final String jwtToken = await _guestRepository.getJwtToken();
+    final String jwtToken = _guestRepository.getJwtToken();
     if (jwtToken != null) {
       final Duration addTime = Duration(days: int.parse(expireTime));
       final DateTime expire = DateTime.now().add(addTime);
@@ -58,7 +58,7 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
   }
 
   Stream<GuestState> _mapGetGuestEventToState() async* {
-    final String jwtToken = await _guestRepository.getJwtToken();
+    final String jwtToken = _guestRepository.getJwtToken();
     if (jwtToken != null) {
       final List _guestList = await getGuestList(jwtToken);
       print(
@@ -75,7 +75,7 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
   }
 
   Stream<GuestState> _mapDeleteGuestEventToState(String machine) async* {
-    final String jwtToken = await _guestRepository.getJwtToken();
+    final String jwtToken = _guestRepository.getJwtToken();
     if (jwtToken != null) {
       final List _guestList = await deleteGuest(jwtToken: jwtToken, machine: machine);
     } else {

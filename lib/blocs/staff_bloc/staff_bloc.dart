@@ -39,7 +39,7 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
     String password,
     String displayName,
   ) async* {
-    final String jwtToken = await _staffRepository.getJwtToken();
+    final String jwtToken = _staffRepository.getJwtToken();
     if (jwtToken != null) {
       final Map<String, String> requestData = {
         'jwtToken': jwtToken,
@@ -56,7 +56,7 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
   }
 
   Stream<StaffState> _mapGetStaffEventToState() async* {
-    final String jwtToken = await _staffRepository.getJwtToken();
+    final String jwtToken = _staffRepository.getJwtToken();
     if (jwtToken != null) {
       final List _staffList = await getStaffList(jwtToken);
       print(
@@ -73,7 +73,7 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
   }
 
   Stream<StaffState> _mapDeleteStaffEventToState(String deleteUid) async* {
-    final String jwtToken = await _staffRepository.getJwtToken();
+    final String jwtToken = _staffRepository.getJwtToken();
     if (jwtToken != null) {
       final List _staffList =
           await deleteStaff(jwtToken: jwtToken, uid: deleteUid);
