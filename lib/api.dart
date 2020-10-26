@@ -184,7 +184,26 @@ Future<List<Map>> regenerateGuestSerialNumber(Map requestData) async {
     default:
       _message = 'Unexpected error.';
   }
-  print('@api.dart -> createGuest() -> message = $_message');
+  print('@api.dart -> regenerateGuestSerialNumber() -> message = $_message');
   final List guestList = await getGuestList(requestData['jwtToken']);
+  return guestList;
+}
+
+Future<List<Map>> deleteGuest({String jwtToken, String machine}) async {
+  String _message = '';
+  final http.Response response = await http.delete(
+    guestPath + '?jwtToken=' + jwtToken + '&machine=' + machine,
+    headers: {'Content-Type': 'application/json'},
+  );
+
+  if (response.statusCode == 200) {
+    final Map responseData = json.decode(response.body);
+    _message = '${responseData['message']}, removed machine: ${responseData['machine']}';
+  } else {
+    final Map responseData = json.decode(response.body);
+    _message = responseData['result'];
+  }
+  print('@api.dart -> deleteGuest() -> message = $_message');
+  final List guestList = await getGuestList(jwtToken);
   return guestList;
 }

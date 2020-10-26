@@ -29,6 +29,8 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
       );
     } else if (event is GetGuestEvent) {
       yield* _mapGetGuestEventToState();
+    } else if (event is DeleteGuestEvent) {
+      yield* _mapDeleteGuestEventToState(event.machine);
     }
   }
 
@@ -47,9 +49,7 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
         'expire': expire.millisecondsSinceEpoch.toString(),
         'position': position,
       };
-
-      final List _guestList =
-          await regenerateGuestSerialNumber(requestData);
+      final List _guestList = await regenerateGuestSerialNumber(requestData);
       yield ShowGuestState(guestList: _guestList);
     } else {
       print('JwtToken is not provided.');
@@ -68,6 +68,19 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
       } else {
         yield NoGuestState();
       }
+    } else {
+      print('JwtToken is not provided.');
+      yield NoGuestState();
+    }
+  }
+
+  Stream<GuestState> _mapDeleteGuestEventToState(String machine) async* {
+    final String jwtToken = await _guestRepository.getJwtToken();
+    if (jwtToken != null) {
+      final List _guestList = await deleteGuest(jwtToken: jwtToken, machine: machine);
+    } else {
+      print('JwtToken is not provided.');
+      yield NoGuestState();
     }
   }
 }

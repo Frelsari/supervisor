@@ -28,3 +28,12 @@ class GetGuestEvent extends GuestEvent {
   @override
   List<Object> get props => [];
 }
+
+class DeleteGuestEvent extends GuestEvent {
+  final String machine;
+
+  DeleteGuestEvent({this.machine}) : assert(machine != null);
+
+  @override
+  List<Object> get props => [this.machine];
+}
