@@ -4,12 +4,12 @@ abstract class GuestEvent extends Equatable {
   const GuestEvent();
 }
 
-class AddGuestEvent extends GuestEvent {
+class RegenerateSerialNumberEvent extends GuestEvent {
   final String machine;
   final String expireTime;
   final String position;
 
-  AddGuestEvent({
+  RegenerateSerialNumberEvent({
     this.machine,
     this.expireTime,
     this.position,

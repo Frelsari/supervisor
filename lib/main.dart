@@ -15,7 +15,7 @@ Future<void> main() async {
   await Firebase.initializeApp();
   runApp(MultiBlocProvider(
     providers: [
-      BlocProvider(
+      BlocProvider<AuthenticateBloc>(
         create: (context) => AuthenticateBloc(userRepository: userRepository),
       ),
       BlocProvider<StaffBloc>(

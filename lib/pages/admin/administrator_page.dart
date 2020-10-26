@@ -162,7 +162,7 @@ class _AdministratorState extends State<Administrator> {
             onPressed: () {
               final String expireText = expireController.text.trim();
               if (expireText.contains(new RegExp('^[0-9]*\$'))) {
-                BlocProvider.of<GuestBloc>(context).add(AddGuestEvent(
+                BlocProvider.of<GuestBloc>(context).add(RegenerateSerialNumberEvent(
                   machine: machineController.text.trim(),
                   expireTime: expireText,
                   position: positionController.text.trim(),

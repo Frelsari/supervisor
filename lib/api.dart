@@ -152,8 +152,7 @@ Future<List<Map>> getGuestList(String jwtToken) async {
   return guestList;
 }
 
-Future<List<Map<String, String>>> addGuestOrRegenerateSerialNumber(
-    Map requestData) async {
+Future<List<Map>> regenerateGuestSerialNumber(Map requestData) async {
   String _message = '';
   final String body = json.encode(requestData);
   final http.Response response = await http.post(

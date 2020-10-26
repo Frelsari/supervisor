@@ -11,7 +11,6 @@ part 'guest_state.dart';
 
 class GuestBloc extends Bloc<GuestEvent, GuestState> {
   final UserRepository _guestRepository;
-  final List<Map> guestList = [];
 
   GuestBloc({@required UserRepository userRepository})
       : assert(userRepository != null),
@@ -22,8 +21,8 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
   Stream<GuestState> mapEventToState(
     GuestEvent event,
   ) async* {
-    if (event is AddGuestEvent) {
-      yield* _mapAddGuestEventToState(
+    if (event is RegenerateSerialNumberEvent) {
+      yield* _mapRegenerateSerialNumberEventToState(
         event.machine,
         event.expireTime,
         event.position,
@@ -33,7 +32,7 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     }
   }
 
-  Stream<GuestState> _mapAddGuestEventToState(
+  Stream<GuestState> _mapRegenerateSerialNumberEventToState(
     String machine,
     String expireTime,
     String position,
@@ -42,7 +41,7 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     if (jwtToken != null) {
       final Duration addTime = Duration(days: int.parse(expireTime));
       final DateTime expire = DateTime.now().add(addTime);
-      final Map<String, String> requestData = {
+      final Map requestData = {
         'jwtToken': jwtToken,
         'machine': machine,
         'expire': expire.millisecondsSinceEpoch.toString(),
@@ -50,7 +49,7 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
       };
 
       final List _guestList =
-          await addGuestOrRegenerateSerialNumber(requestData);
+          await regenerateGuestSerialNumber(requestData);
       yield ShowGuestState(guestList: _guestList);
     } else {
       print('JwtToken is not provided.');

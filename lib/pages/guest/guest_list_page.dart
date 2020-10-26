@@ -49,7 +49,7 @@ class GuestList extends StatelessWidget {
           onPressed: () {
             final String expireText = expireController.text.trim();
             if (expireText.contains(new RegExp('^[0-9]*\$'))) {
-              BlocProvider.of<GuestBloc>(context).add(AddGuestEvent(
+              BlocProvider.of<GuestBloc>(context).add(RegenerateSerialNumberEvent(
                 machine: guest['machine'],
                 expireTime: expireText,
                 position: guest['position'],
