@@ -37,9 +37,9 @@ const createGuest = (position?: string): GuestUser => {
 }
 
 export const onCreateMachine = functions.firestore.document('/NTUTLab321/{machineId}')
-  .onCreate(async (change) => {
-    const data = change.data() as Machine
-    const machineId = change.id
+  .onCreate(async (snapshot) => {
+    const data = snapshot.data() as Machine
+    const machineId = snapshot.id
     const machinePosition = data.judge
     
     // validate the data
@@ -68,7 +68,7 @@ export const onCreateMachine = functions.firestore.document('/NTUTLab321/{machin
   })
 
 export const onUpdateMachine = functions.firestore.document('/NTUTLab321/{machineId}')
-  .onUpdate(async (change, context) => {
+  .onUpdate(async (change) => {
     const data = change.after.data() as Machine
     const machineId = change.after.id
     const machinePosition = data.judge
@@ -100,5 +100,32 @@ export const onUpdateMachine = functions.firestore.document('/NTUTLab321/{machin
       } catch (e) {
         logger.error('could not update a guest document in /guests.\n' + e)
       }
+    }
+  })
+
+export const onDeleteMachine = functions.firestore.document('/NTUTLab321/{machineId}')
+  .onDelete(async (snapshot) => {
+    const data = snapshot.data() as Machine
+    const machineId = snapshot.id
+    
+    // validate the data
+    if (isEmptyObject(data)) {
+      logger.error('could not receive the new machine data pack!')
+      return
+    }
+    
+    // check if this machine is still having a guest account.
+    if (await isThisMachineRegisteredAGuestAccount(machineId)) {
+      // delete the guest account's document.
+      try {
+        await admin.firestore()
+          .collection('/guests')
+          .doc(machineId)
+          .delete()
+      } catch (e) {
+        logger.error('could not delete a guest document in /guests.\n' + e)
+      }
+    } else {
+      logger.info(`This machine(${machineId}) is already lost its guest account, delete operation done.`)
     }
   })
