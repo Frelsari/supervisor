@@ -9,7 +9,9 @@ class Guest extends StatelessWidget {
       appBar: AppBar(
         title: Text('家屬'),
       ),
-      body: Container(),
+      body: Center(
+        child: Text('In production'),
+      ),
     );
   }
 }
