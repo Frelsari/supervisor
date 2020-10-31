@@ -20,7 +20,7 @@ Future<Map<String, String>> getUserData(String jwtToken) async {
     };
     return userData;
   } else {
-    print('@api.dart -> getUserData() -> user not found');
+    print('@api.dart -> getUserData() -> message = ${response.body}');
     return null;
   }
 }

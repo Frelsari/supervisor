@@ -31,6 +31,10 @@ class AuthenticateLogOutEvent extends AuthenticateEvent {
 }
 
 class AuthenticateLogInFailedEvent extends AuthenticateEvent {
+  final String message;
+
+  const AuthenticateLogInFailedEvent({this.message});
+
   @override
-  List<Object> get props => [];
+  List<Object> get props => [this.message];
 }

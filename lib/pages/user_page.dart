@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/authenticate_bloc/authenticate_bloc.dart';
 import 'package:firevisor/pages/admin/administrator_page.dart';
 
+import 'guest/guest_page.dart';
+
 class User extends StatelessWidget {
   static const sName = "/user_page";
 
@@ -19,7 +21,7 @@ class User extends StatelessWidget {
             case 'staff':
               return Supervisor();
             case 'guest':
-              return null;
+              return Guest();
             default:
               return null;
           }
