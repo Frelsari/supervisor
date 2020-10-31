@@ -14,7 +14,7 @@ class User extends StatelessWidget {
     return BlocBuilder<AuthenticateBloc, AuthenticateState>(
       builder: (context, state) {
         if (state is AuthenticateLoggedInState) {
-          final Map<String, String> userData = state.loginResult;
+          final Map userData = state.loginResult;
           switch (userData['role']) {
             case 'administrator':
               return Administrator();

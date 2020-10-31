@@ -19,7 +19,6 @@ class _LoginCardState extends State<LoginCard> {
   void staffLogin() {
     BlocProvider.of<AuthenticateBloc>(context)
         .add(AuthenticateLoggingInEvent());
-    print('staffLogin called');
 
     final String _username = usernameController.text.trim();
     final String _password = passwordController.text;
@@ -36,7 +35,21 @@ class _LoginCardState extends State<LoginCard> {
     ));
   }
 
-  void guestLogin() {}
+  void guestLogin() {
+    BlocProvider.of<AuthenticateBloc>(context)
+        .add(AuthenticateLoggingInEvent());
+
+    final _serialNumber = serialNumberController.text.trim();
+    if (_serialNumber.isEmpty) {
+      BlocProvider.of<AuthenticateBloc>(context)
+          .add(AuthenticateLogInFailedEvent(message: '使用者資訊未輸入完整'));
+      return;
+    }
+
+    BlocProvider.of<AuthenticateBloc>(context).add(SerialNumberLogInEvent(
+      serialNumber: _serialNumber,
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,28 +60,32 @@ class _LoginCardState extends State<LoginCard> {
       elevation: 5.0,
       child: BlocConsumer<AuthenticateBloc, AuthenticateState>(
         listener: (context, state) {
-          if (state is AuthenticateLoggingInState) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: ListTile(
-                leading: Icon(Icons.whatshot),
-                title: Text('登入中，請稍候...'),
-              ),
-              backgroundColor: Colors.teal[700],
-              duration: Duration(seconds: 1),
-            ));
-          } else if (state is AuthenticateLoggedInState) {
+          if (state is AuthenticateLoggedInState) {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => User(), // 離開登入畫面 (轉移到內部)
+              builder: (context) => User(),
             ));
-          } else if (state is AuthenticateLogInFailedState) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: ListTile(
-                leading: Icon(Icons.info),
-                title: Text(state.failureMessage),
-              ),
-              backgroundColor: Colors.red[700],
-              duration: Duration(seconds: 1),
-            ));
+          } else {
+            SnackBar snackBar;
+            if (state is AuthenticateLoggingInState) {
+              snackBar = SnackBar(
+                content: ListTile(
+                  leading: Icon(Icons.whatshot),
+                  title: Text('登入中，請稍候...'),
+                ),
+                backgroundColor: Colors.teal[700],
+                duration: Duration(seconds: 1, milliseconds: 500),
+              );
+            } else if (state is AuthenticateLogInFailedState) {
+              snackBar = SnackBar(
+                content: ListTile(
+                  leading: Icon(Icons.info),
+                  title: Text(state.failureMessage),
+                ),
+                backgroundColor: Colors.red[700],
+                duration: Duration(seconds: 1, milliseconds: 500),
+              );
+            }
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
           }
         },
         builder: (context, state) {

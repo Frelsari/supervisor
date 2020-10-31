@@ -3,6 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:firevisor/user_repository.dart';
+import 'package:firevisor/api.dart';
 
 part 'authenticate_event.dart';
 
@@ -33,6 +34,8 @@ class AuthenticateBloc extends Bloc<AuthenticateEvent, AuthenticateState> {
       );
     } else if (event is AuthenticateLoggingInEvent) {
       yield* _mapAuthenticateLoggingInEventToState();
+    } else if (event is SerialNumberLogInEvent) {
+      yield* _mapSerialNumberLogInEventToState(event.serialNumber);
     }
   }
 
@@ -81,5 +84,15 @@ class AuthenticateBloc extends Bloc<AuthenticateEvent, AuthenticateState> {
 
   Stream<AuthenticateState> _mapAuthenticateLoggingInEventToState() async* {
     yield AuthenticateLoggingInState();
+  }
+
+  Stream<AuthenticateState> _mapSerialNumberLogInEventToState(String serialNumber) async* {
+    Map loginResult = await getGuestData(serialNumber);
+
+    if (loginResult['statusCode'] == '200') {
+      yield AuthenticateLoggedInState(loginResult: loginResult);
+    } else {
+      yield AuthenticateLogInFailedState(failureMessage: loginResult['message']);
+    }
   }
 }
