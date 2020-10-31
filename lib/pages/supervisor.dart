@@ -172,7 +172,7 @@ class _SupervisorState extends State<Supervisor> {
 
   List<DataRow> createRows(QuerySnapshot snapshot) {
     //顯示雲端資料
-    List<DataRow> list = snapshot.documents.map(
+    List<DataRow> list = snapshot.docs.map(
       (DocumentSnapshot documentSnapshot) {
         selector(documentSnapshot['alarm']);
         return DataRow(
