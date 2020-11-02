@@ -16,7 +16,7 @@ class _LoginCardState extends State<LoginCard> {
   bool _isStaffLogin = false;
   bool _enabled = true;
 
-  final infoIncompleteSnackbar = SnackBar(
+  final infoIncompleteSnackBar = SnackBar(
     content: ListTile(
       leading: Icon(Icons.info),
       title: Text('使用者資訊未輸入完整'),
@@ -29,7 +29,7 @@ class _LoginCardState extends State<LoginCard> {
     final String _username = usernameController.text.trim();
     final String _password = passwordController.text;
     if (_username.isEmpty || _password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(infoIncompleteSnackbar);
+      ScaffoldMessenger.of(context).showSnackBar(infoIncompleteSnackBar);
       return;
     }
 
@@ -44,7 +44,7 @@ class _LoginCardState extends State<LoginCard> {
   void guestLogin() {
     final _serialNumber = serialNumberController.text.trim();
     if (_serialNumber.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(infoIncompleteSnackbar);
+      ScaffoldMessenger.of(context).showSnackBar(infoIncompleteSnackBar);
       return;
     }
 

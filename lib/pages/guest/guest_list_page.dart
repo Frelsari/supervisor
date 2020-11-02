@@ -30,7 +30,7 @@ class GuestListPage extends StatelessWidget {
 
 class GuestList extends StatelessWidget {
   final bool _isAdmin;
-  Color _themeColor;
+  final Color _themeColor;
 
   @override
   GuestList(bool isAdmin) : _isAdmin = isAdmin, _themeColor = isAdmin ? Colors.deepPurple : Colors.indigo;
