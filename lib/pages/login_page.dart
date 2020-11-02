@@ -16,19 +16,25 @@ class _LoginCardState extends State<LoginCard> {
   bool _isStaffLogin = false;
   bool _enabled = true;
 
-  void staffLogin() {
-    BlocProvider.of<AuthenticateBloc>(context)
-        .add(AuthenticateLoggingInEvent());
+  final infoIncompleteSnackbar = SnackBar(
+    content: ListTile(
+      leading: Icon(Icons.info),
+      title: Text('使用者資訊未輸入完整'),
+    ),
+    backgroundColor: Colors.red[700],
+    duration: Duration(seconds: 1, milliseconds: 500),
+  );
 
+  void staffLogin() {
     final String _username = usernameController.text.trim();
     final String _password = passwordController.text;
-
     if (_username.isEmpty || _password.isEmpty) {
-      BlocProvider.of<AuthenticateBloc>(context)
-          .add(AuthenticateLogInFailedEvent(message: '使用者資訊未輸入完整'));
+      ScaffoldMessenger.of(context).showSnackBar(infoIncompleteSnackbar);
       return;
     }
 
+    BlocProvider.of<AuthenticateBloc>(context)
+        .add(AuthenticateLoggingInEvent());
     BlocProvider.of<AuthenticateBloc>(context).add(AuthenticateLogInEvent(
       username: _username,
       password: _password,
@@ -36,16 +42,14 @@ class _LoginCardState extends State<LoginCard> {
   }
 
   void guestLogin() {
-    BlocProvider.of<AuthenticateBloc>(context)
-        .add(AuthenticateLoggingInEvent());
-
     final _serialNumber = serialNumberController.text.trim();
     if (_serialNumber.isEmpty) {
-      BlocProvider.of<AuthenticateBloc>(context)
-          .add(AuthenticateLogInFailedEvent(message: '使用者資訊未輸入完整'));
+      ScaffoldMessenger.of(context).showSnackBar(infoIncompleteSnackbar);
       return;
     }
 
+    BlocProvider.of<AuthenticateBloc>(context)
+        .add(AuthenticateLoggingInEvent());
     BlocProvider.of<AuthenticateBloc>(context).add(SerialNumberLogInEvent(
       serialNumber: _serialNumber,
     ));
@@ -94,6 +98,9 @@ class _LoginCardState extends State<LoginCard> {
           return Column(
             children: [
               ListTile(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
                 leading: (_isStaffLogin
                     ? Icon(Icons.assignment_ind)
                     : Icon(Icons.airline_seat_flat)),
