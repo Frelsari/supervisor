@@ -2,11 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 
-class GuestList extends StatelessWidget {
+class GuestListPage extends StatelessWidget {
   final bool _isAdmin;
 
   @override
-  GuestList(bool isAdmin) : _isAdmin = isAdmin;
+  GuestListPage(bool isAdmin) : _isAdmin = isAdmin;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('帳戶管理'),
+        backgroundColor: _isAdmin ? Colors.deepPurple : Colors.indigo,
+        actions: [
+          BackButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+      body: GuestList(_isAdmin),
+    );
+  }
+}
+
+
+class GuestList extends StatelessWidget {
+  final bool _isAdmin;
+  Color _themeColor;
+
+  @override
+  GuestList(bool isAdmin) : _isAdmin = isAdmin, _themeColor = isAdmin ? Colors.deepPurple : Colors.indigo;
 
   Future<void> _showRegenerateSerialNumberDialog(
     BuildContext context,
@@ -42,7 +69,7 @@ class GuestList extends StatelessWidget {
         FlatButton(
           child: Text(
             '確定',
-            style: TextStyle(color: Colors.deepPurple),
+            style: TextStyle(color: _themeColor),
           ),
           onPressed: () {
             final String expireText = expireController.text.trim();
@@ -117,7 +144,7 @@ class GuestList extends StatelessWidget {
               child: Text(
                 '確定',
                 style: TextStyle(
-                  color: Colors.deepPurple,
+                  color: _themeColor,
                 ),
               ),
               onPressed: () => Navigator.pop(context),
