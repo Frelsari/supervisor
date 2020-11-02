@@ -21,15 +21,20 @@ class User extends StatelessWidget {
             case 'staff':
               return Supervisor();
             case 'guest':
-              return Guest();
+              return Guest(userData);
             default:
-              return null;
+              return Scaffold(
+                appBar: null,
+                body: Center(
+                  child: Text('ROLE ERROR'),
+                ),
+              );
           }
         } else {
           return Scaffold(
             appBar: null,
             body: Center(
-              child: Text('error'),
+              child: Text('AUTH ERROR'),
             ),
           );
         }

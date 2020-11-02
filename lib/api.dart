@@ -128,14 +128,21 @@ Future<Map<String, String>> getGuestData(String serialNumber) async {
   switch (response.statusCode) {
     case 200:
       final Map data = json.decode(response.body);
+      print(data);
       final Map<String, String> userData = {
         'statusCode': '200',
         'machine': data['machine'],
-        'serialNumber': data['serialNumber'].toString(),
-        'expire': data['expire'].toString(),
-        'position': data['position'],
-        'role': data['role'],
-        'reGenerateSerialNumberTime': data['reGenerateSerialNumberTime'].toString(),
+        'judge': data['machineData']['judge'],
+        'alarm': data['machineData']['alarm'],
+        'change': data['machineData']['change'],
+        'modedescription': data['machineData']['modedescription'],
+        'power': data['machineData']['power'],
+        'time': data['machineData']['time'],
+        'serialNumber': data['guestDocument']['serialNumber'].toString(),
+        'expire': data['guestDocument']['expire'].toString(),
+        'position': data['guestDocument']['position'],
+        'role': data['guestDocument']['role'],
+        'reGenerateSerialNumberTime': data['guestDocument']['reGenerateSerialNumberTime'].toString(),
       };
       return userData;
     case 404:

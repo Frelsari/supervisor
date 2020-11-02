@@ -19,8 +19,6 @@ class GuestList extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('機器編號：${guest['machine']}'),
-            SizedBox(height: 12.0),
             TextField(
               keyboardType: TextInputType.datetime,
               controller: expireController,
@@ -103,18 +101,14 @@ class GuestList extends StatelessWidget {
         final Duration timeLeft = expireTime.difference(new DateTime.now());
 
         return AlertDialog(
-          title: Text(guest['machine']),
+          title: Text(guest['serialNumber']),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('機器編號：${guest['machine']}'),
-                SizedBox(height: 12.0),
-                Text('登入流水號：${guest['serialNumber']}'),
+                Text('床室號：${guest['position']}'),
                 SizedBox(height: 12.0),
                 Text('帳號過期時間：${formatTimeLeftToMessage(timeLeft)}'),
-                SizedBox(height: 12.0),
-                Text('機器位置：${guest['position']}'),
               ],
             ),
           ),
@@ -159,10 +153,10 @@ class GuestList extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Icon(Icons.airline_seat_flat),
                   ),
-                  title: Text(guest['machine']),
-                  subtitle: Text('家屬'),
+                  title: Text(guest['serialNumber']),
+                  subtitle: Text(guest['position']),
                   trailing: IconButton(
-                    icon: Icon(Icons.sync),
+                    icon: Icon(Icons.fiber_new_rounded),
                     onPressed: () =>
                         _showRegenerateSerialNumberDialog(context, guest),
                   ),
