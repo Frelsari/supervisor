@@ -20,7 +20,7 @@ class UserRepository {
         password: password,
       );
       _jwtToken = await _auth.currentUser.getIdToken();
-      final Map userData = await getUserData(_jwtToken);
+      final Map userData = await getStaffData(_jwtToken);
       return userData;
     } on Exception catch (e) {
       print(e);

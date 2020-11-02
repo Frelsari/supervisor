@@ -3,6 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:firevisor/user_repository.dart';
+import 'package:firevisor/api.dart';
 
 part 'authenticate_event.dart';
 
@@ -28,13 +29,16 @@ class AuthenticateBloc extends Bloc<AuthenticateEvent, AuthenticateState> {
     } else if (event is AuthenticateLogOutEvent) {
       yield* _mapAuthenticateLogOutToState();
     } else if (event is AuthenticateLogInFailedEvent) {
-      yield* _mapAuthenticateLogInFailedEventToState();
+      yield* _mapAuthenticateLogInFailedEventToState(
+        event.message,
+      );
     } else if (event is AuthenticateLoggingInEvent) {
       yield* _mapAuthenticateLoggingInEventToState();
+    } else if (event is SerialNumberLogInEvent) {
+      yield* _mapSerialNumberLogInEventToState(event.serialNumber);
     }
   }
 
-  // 使用者登入時觸發
   Stream<AuthenticateState> _mapAuthenticateLogInEventToState(
     String username,
     String password,
@@ -43,8 +47,7 @@ class AuthenticateBloc extends Bloc<AuthenticateEvent, AuthenticateState> {
     Map loginResult;
 
     if (isLoggedIn) {
-      print(
-          '@authenticate_bloc.dart -> _mapAuthenticateLogInEventToState -> user already logged in');
+      print('@authenticate_bloc.dart -> _mapAuthenticateLogInEventToState -> user already logged in');
     } else {
       try {
         loginResult = await _userRepository.logInWithUsernameAndPassword(
@@ -52,22 +55,18 @@ class AuthenticateBloc extends Bloc<AuthenticateEvent, AuthenticateState> {
           password: password,
         );
 
-        print(
-            '@authenticate_bloc.dart -> _mapAuthenticateLogInEventToState -> loginResult = ${loginResult.toString()}');
-
         if (loginResult == null) {
-          yield AuthenticateLogInFailedState();
+          yield AuthenticateLogInFailedState(failureMessage: '使用者名稱錯誤或是密碼錯誤，請再試一次');
           throw Exception;
         }
       } on Exception catch (e) {
         print(e);
-        yield AuthenticateLogInFailedState();
+        yield AuthenticateLogInFailedState(failureMessage: '連線至伺服器時發生錯誤，請再試一次');
       }
     }
     yield AuthenticateLoggedInState(loginResult: loginResult);
   }
 
-  // 使用者登出時觸發
   Stream<AuthenticateState> _mapAuthenticateLogOutToState() async* {
     final bool isLoggedIn = _userRepository.isLoggedIn();
     if (isLoggedIn) {
@@ -79,11 +78,21 @@ class AuthenticateBloc extends Bloc<AuthenticateEvent, AuthenticateState> {
     yield AuthenticateLoggedOutState();
   }
 
-  Stream<AuthenticateState> _mapAuthenticateLogInFailedEventToState() async* {
-    yield AuthenticateLogInFailedState();
+  Stream<AuthenticateState> _mapAuthenticateLogInFailedEventToState(String message) async* {
+    yield AuthenticateLogInFailedState(failureMessage: message);
   }
 
   Stream<AuthenticateState> _mapAuthenticateLoggingInEventToState() async* {
     yield AuthenticateLoggingInState();
+  }
+
+  Stream<AuthenticateState> _mapSerialNumberLogInEventToState(String serialNumber) async* {
+    Map loginResult = await getGuestData(serialNumber);
+
+    if (loginResult['statusCode'] == '200') {
+      yield AuthenticateLoggedInState(loginResult: loginResult);
+    } else {
+      yield AuthenticateLogInFailedState(failureMessage: loginResult['message']);
+    }
   }
 }

@@ -25,12 +25,26 @@ class AuthenticateLogInEvent extends AuthenticateEvent {
       ];
 }
 
+class SerialNumberLogInEvent extends AuthenticateEvent {
+  final String serialNumber;
+
+  const SerialNumberLogInEvent({this.serialNumber})
+      : assert(serialNumber != null);
+
+  @override
+  List<Object> get props => [this.serialNumber];
+}
+
 class AuthenticateLogOutEvent extends AuthenticateEvent {
   @override
   List<Object> get props => [];
 }
 
 class AuthenticateLogInFailedEvent extends AuthenticateEvent {
+  final String message;
+
+  const AuthenticateLogInFailedEvent({this.message});
+
   @override
-  List<Object> get props => [];
+  List<Object> get props => [this.message];
 }

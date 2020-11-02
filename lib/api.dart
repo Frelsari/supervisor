@@ -6,7 +6,7 @@ const userPath = rootDomain + '/user';
 const staffPath = rootDomain + '/staff';
 const guestPath = rootDomain + '/guest';
 
-Future<Map<String, String>> getUserData(String jwtToken) async {
+Future<Map<String, String>> getStaffData(String jwtToken) async {
   final http.Response response =
       await http.get(userPath + '?jwtToken=' + jwtToken);
 
@@ -20,7 +20,7 @@ Future<Map<String, String>> getUserData(String jwtToken) async {
     };
     return userData;
   } else {
-    print('@api.dart -> getUserData() -> user not found');
+    print('@api.dart -> getStaffData() -> message = ${response.body}');
     return null;
   }
 }
@@ -119,6 +119,51 @@ Future<List<Map<String, String>>> deleteStaff(
   print('@api.dart -> deleteStaff() -> message = $_message');
   final List staffList = await getStaffList(jwtToken);
   return staffList;
+}
+
+Future<Map<String, String>> getGuestData(String serialNumber) async {
+  final http.Response response =
+  await http.get(userPath + '?serialNumber=' + serialNumber);
+
+  switch (response.statusCode) {
+    case 200:
+      final Map data = json.decode(response.body);
+      print(data);
+      final Map<String, String> userData = {
+        'statusCode': '200',
+        'machine': data['machine'],
+        'judge': data['machineData']['judge'],
+        'alarm': data['machineData']['alarm'],
+        'change': data['machineData']['change'],
+        'modedescription': data['machineData']['modedescription'],
+        'power': data['machineData']['power'],
+        'time': data['machineData']['time'],
+        'serialNumber': data['guestDocument']['serialNumber'].toString(),
+        'expire': data['guestDocument']['expire'].toString(),
+        'position': data['guestDocument']['position'],
+        'role': data['guestDocument']['role'],
+        'reGenerateSerialNumberTime': data['guestDocument']['reGenerateSerialNumberTime'].toString(),
+      };
+      return userData;
+    case 404:
+      final Map<String, String> loginResult = {
+        'statusCode': '404',
+        'message': '流水號不存在，請使用其他流水號登入',
+      };
+      return loginResult;
+    case 410:
+      final Map<String, String> loginResult = {
+        'statusCode': '410',
+        'message': '流水號已過期，請重新產生流水號或使用其他流水號登入',
+      };
+      return loginResult;
+    default:
+      final Map<String, String> loginResult = {
+        'statusCode': null,
+        'message': 'Unexpected error.',
+      };
+      return loginResult;
+  }
 }
 
 Future<List<Map>> getGuestList(String jwtToken) async {
