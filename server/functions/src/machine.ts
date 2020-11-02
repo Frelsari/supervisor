@@ -36,6 +36,19 @@ const createGuest = (position?: string): GuestUser => {
   } as GuestUser
 }
 
+export const getMachineData = async (machineId: string): Promise<Machine | undefined> => {
+  try {
+    return (await admin.firestore()
+      .collection('NTUTLab321')
+      .doc(machineId.toString().trim())
+      .get()).data() as unknown as Machine
+  } catch (e) {
+    logger.warn(`Could not get the machine data! request machineId(${machineId}) may not exist.`)
+    return undefined
+  }
+}
+
+
 export const onCreateMachine = functions.firestore.document('/NTUTLab321/{machineId}')
   .onCreate(async (snapshot) => {
     const data = snapshot.data() as Machine

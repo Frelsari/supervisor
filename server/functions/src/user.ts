@@ -1,6 +1,7 @@
 import {Request} from "firebase-functions/lib/providers/https";
-import {RequirementOfQuerySpecificUser, GuestUser} from "./types";
+import {RequirementOfQuerySpecificUser, GuestUser, Machine} from "./types";
 import {decryptJwt, isEmptyObject, validatePermissionAndGetDocument} from "./utils";
+import {getMachineData} from "./machine";
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
@@ -92,8 +93,21 @@ export default functions.https.onRequest(async (req: Request, resp) => {
         return
       }
       
+      // get machineData.
+      const machineData = await getMachineData(guestDocumentId) as Machine
+      if (isEmptyObject(machineData)) {
+        resp.status(404).send('Could not find the machine data by this machineId.')
+        return
+      }
+      
       // D => jwt and serialNumber
-      resp.status(200).json(Object.assign({machine: guestDocumentId}, guestDocument))
+      resp.status(200).json(
+        {
+          ...{machine: guestDocumentId},
+          machineData,
+          guestDocument
+        }
+      )
       return
       
     } else {
