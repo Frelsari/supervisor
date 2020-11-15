@@ -60,8 +60,8 @@ export default functions.https.onRequest(async (req: Request, resp) => {
       }
     } else if (data.serialNumber) {
       
-      let guestDocument!: GuestUser
-      let guestDocumentId!: string
+      let guestDocument = {} as GuestUser
+      let guestDocumentId = '';
       (await admin.firestore()
         .collection('guests')
         .where('serialNumber', '==', data.serialNumber).get())
@@ -87,17 +87,20 @@ export default functions.https.onRequest(async (req: Request, resp) => {
       }
       
       // check if expired.
-      if (!isStaffOrAdmin && guestDocument.expire < Date.now()) {
+      if (!isStaffOrAdmin && guestDocument && guestDocument.expire < Date.now()) {
         // B => only serialNumber
         resp.status(410).send('This account has expired.')
         return
       }
       
       // get machineData.
-      const machineData = await getMachineData(guestDocumentId) as Machine
-      if (isEmptyObject(machineData)) {
-        resp.status(404).send('Could not find the machine data by this machineId.')
-        return
+      let machineData!: Machine
+      if (guestDocumentId) {
+        machineData = await getMachineData(guestDocumentId) as Machine
+        if (isEmptyObject(machineData)) {
+          resp.status(404).send('Could not find the machine data by this machineId.')
+          return
+        }
       }
       
       // D => jwt and serialNumber
