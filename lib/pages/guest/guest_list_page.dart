@@ -14,13 +14,6 @@ class GuestListPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('帳戶管理'),
         backgroundColor: _isAdmin ? Colors.deepPurple : Colors.indigo,
-        actions: [
-          BackButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
       ),
       body: GuestList(_isAdmin),
     );
