@@ -8,6 +8,10 @@ class GuestListPage extends StatelessWidget {
   @override
   GuestListPage(bool isAdmin) : _isAdmin = isAdmin;
 
+  Future<void> _refreshList(BuildContext context) async {
+    BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,6 +20,11 @@ class GuestListPage extends StatelessWidget {
         backgroundColor: _isAdmin ? Colors.deepPurple : Colors.indigo,
       ),
       body: GuestList(_isAdmin),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.refresh),
+        backgroundColor: Colors.indigo,
+        onPressed: () => _refreshList(context),
+      ),
     );
   }
 }
