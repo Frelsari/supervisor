@@ -78,6 +78,11 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     final String jwtToken = _guestRepository.getJwtToken();
     if (jwtToken != null) {
       final List _guestList = await deleteGuest(jwtToken: jwtToken, machine: machine);
+      if (_guestList != null) {
+        yield ShowGuestState(guestList: _guestList);
+      } else {
+        yield NoGuestState();
+      }
     } else {
       print('JwtToken is not provided.');
       yield NoGuestState();

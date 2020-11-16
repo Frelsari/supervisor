@@ -22,6 +22,17 @@ class _AdministratorState extends State<Administrator> {
     });
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _refreshList();
+  }
+
+  Future<void> _refreshList() async {
+    BlocProvider.of<StaffBloc>(context).add(GetStaffEvent());
+    BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
+  }
+
   Future<void> _showAddUserDialog(BuildContext context) async {
     if (_selectedIndex == 0) {
       final usernameController = TextEditingController();
@@ -185,8 +196,6 @@ class _AdministratorState extends State<Administrator> {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<StaffBloc>(context).add(GetStaffEvent());
-    BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
     return Scaffold(
       appBar: AppBar(
         title: Text('帳戶管理'),
@@ -204,10 +213,6 @@ class _AdministratorState extends State<Administrator> {
             },
             itemBuilder: (context) => [
               PopupMenuItem(
-                value: 'refresh',
-                child: Text('重新整理'),
-              ),
-              PopupMenuItem(
                 value: 'logout',
                 child: Text('登出'),
               ),
@@ -216,6 +221,11 @@ class _AdministratorState extends State<Administrator> {
         ],
       ),
       body: _widgetOptions[_selectedIndex],
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.refresh),
+        backgroundColor: Colors.indigo,
+        onPressed: _refreshList,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
           BottomNavigationBarItem(
@@ -231,12 +241,6 @@ class _AdministratorState extends State<Administrator> {
         selectedItemColor: Colors.deepPurple,
         onTap: _onItemTapped,
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        backgroundColor: Colors.indigo,
-        onPressed: () => _showAddUserDialog(context),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

@@ -20,7 +20,6 @@ class GuestListPage extends StatelessWidget {
   }
 }
 
-
 class GuestList extends StatelessWidget {
   final bool _isAdmin;
   final Color _themeColor;
@@ -148,6 +147,45 @@ class GuestList extends StatelessWidget {
     );
   }
 
+  Future<void> _showDeleteGuestDialog(BuildContext context, Map guest) async {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('永久刪除使用者'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                Text('你確定要刪除 ${guest['serialNumber']} 嗎？'),
+                Text('此動作將無法復原。'),
+              ],
+            ),
+          ),
+          actions: [
+            FlatButton(
+              child: Text(
+                '取消',
+                style: TextStyle(
+                  color: Colors.grey,
+                ),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            FlatButton(
+              child: Text(
+                '確定',
+                style: TextStyle(
+                  color: _themeColor,
+                ),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ]
+        );
+      },
+    );
+  }
+
   String formatTimeLeftToMessage(Duration _time) {
     if (_time.isNegative) return '已過期';
     if (_time.inMinutes <= 1) return '剩餘 1 分鐘';
@@ -175,10 +213,41 @@ class GuestList extends StatelessWidget {
                   ),
                   title: Text(guest['serialNumber']),
                   subtitle: Text(guest['position']),
-                  trailing: IconButton(
-                    icon: Icon(Icons.fiber_new_rounded),
-                    onPressed: () =>
-                        _showRegenerateSerialNumberDialog(context, guest),
+                  trailing: PopupMenuButton(
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'regenerateSerialNumber',
+                        child: Row(
+                          children: [
+                            Icon(Icons.fiber_new_rounded),
+                            SizedBox(width: 8.0),
+                            Text('重生流水號'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'deletePermanently',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_forever),
+                            SizedBox(width: 8.0),
+                            Text('永久刪除'),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (action) {
+                      switch (action) {
+                        case 'regenerateSerialNumber':
+                          _showRegenerateSerialNumberDialog(context, guest);
+                          break;
+                        case 'deletePermanently':
+                          _showDeleteGuestDialog(context, guest);
+                          break;
+                        default:
+                          print('@guest_list_page -> popup menu error');
+                      }
+                    },
                   ),
                   onTap: () => _showGuestInfoDialog(context, guest),
                 );
