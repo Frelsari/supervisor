@@ -25,12 +25,12 @@ class GuestList extends StatelessWidget {
   final Color _themeColor;
 
   @override
-  GuestList(bool isAdmin) : _isAdmin = isAdmin, _themeColor = isAdmin ? Colors.deepPurple : Colors.indigo;
+  GuestList(bool isAdmin)
+      : _isAdmin = isAdmin,
+        _themeColor = isAdmin ? Colors.deepPurple : Colors.indigo;
 
   Future<void> _showRegenerateSerialNumberDialog(
-    BuildContext context,
-    Map guest,
-  ) async {
+      BuildContext context, Map guest) async {
     final expireController = TextEditingController();
     final regenerateSerialNumberDialog = AlertDialog(
       title: Text('重新產生流水號'),
@@ -66,7 +66,8 @@ class GuestList extends StatelessWidget {
           onPressed: () {
             final String expireText = expireController.text.trim();
             if (expireText.contains(new RegExp('^[0-9]*\$'))) {
-              BlocProvider.of<GuestBloc>(context).add(RegenerateSerialNumberEvent(
+              BlocProvider.of<GuestBloc>(context)
+                  .add(RegenerateSerialNumberEvent(
                 machine: guest['machine'],
                 expireTime: expireText,
                 position: guest['position'],
@@ -108,10 +109,7 @@ class GuestList extends StatelessWidget {
     );
   }
 
-  Future<void> _showGuestInfoDialog(
-    BuildContext context,
-    Map guest,
-  ) async {
+  Future<void> _showGuestInfoDialog(BuildContext context, Map guest) async {
     return showDialog(
       context: context,
       builder: (context) {
@@ -152,36 +150,35 @@ class GuestList extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('永久刪除使用者'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: [
-                Text('你確定要刪除 ${guest['serialNumber']} 嗎？'),
-                Text('此動作將無法復原。'),
-              ],
-            ),
-          ),
-          actions: [
-            FlatButton(
-              child: Text(
-                '取消',
-                style: TextStyle(
-                  color: Colors.grey,
-                ),
+            title: Text('永久刪除使用者'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  Text('你確定要刪除 ${guest['serialNumber']} 嗎？'),
+                  Text('此動作將無法復原。'),
+                ],
               ),
-              onPressed: () => Navigator.pop(context),
             ),
-            FlatButton(
-              child: Text(
-                '確定',
-                style: TextStyle(
-                  color: _themeColor,
+            actions: [
+              FlatButton(
+                child: Text(
+                  '取消',
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
                 ),
+                onPressed: () => Navigator.pop(context),
               ),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ]
-        );
+              FlatButton(
+                child: Text(
+                  '確定',
+                  style: TextStyle(
+                    color: _themeColor,
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ]);
       },
     );
   }

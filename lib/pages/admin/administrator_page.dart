@@ -200,25 +200,7 @@ class _AdministratorState extends State<Administrator> {
       appBar: AppBar(
         title: Text('帳戶管理'),
         backgroundColor: Colors.deepPurple,
-        actions: [
-          PopupMenuButton(
-            onSelected: (action) {
-              print('@administrator_page.dart -> action = $action');
-              switch (action) {
-                case 'refresh':
-                  BlocProvider.of<StaffBloc>(context).add(GetStaffEvent());
-                  BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'logout',
-                child: Text('登出'),
-              ),
-            ],
-          )
-        ],
+        actions: [],
       ),
       body: _widgetOptions[_selectedIndex],
       floatingActionButton: FloatingActionButton(
