@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:firevisor/blocs/staff_bloc/staff_bloc.dart';
 import 'package:firevisor/pages/staff/staff_list_page.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../guest/guest_list_page.dart';
 
 class Administrator extends StatefulWidget {
@@ -31,6 +32,27 @@ class _AdministratorState extends State<Administrator> {
   Future<void> _refreshList() async {
     BlocProvider.of<StaffBloc>(context).add(GetStaffEvent());
     BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
+
+    final loadingDialog = AlertDialog(
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SpinKitRing(
+              color: Colors.black,
+              duration: Duration(seconds: 3),
+            ),
+            SizedBox(height: 12.0),
+            Text('正在載入...'),
+          ],
+        ),
+      ),
+    );
+    return showDialog(
+      context: context,
+      builder: (context) => loadingDialog,
+    );
   }
 
   Future<void> _showAddUserDialog(BuildContext context) async {
@@ -173,7 +195,8 @@ class _AdministratorState extends State<Administrator> {
             onPressed: () {
               final String expireText = expireController.text.trim();
               if (expireText.contains(new RegExp('^[0-9]*\$'))) {
-                BlocProvider.of<GuestBloc>(context).add(RegenerateSerialNumberEvent(
+                BlocProvider.of<GuestBloc>(context)
+                    .add(RegenerateSerialNumberEvent(
                   machine: machineController.text.trim(),
                   expireTime: expireText,
                   position: positionController.text.trim(),
@@ -205,7 +228,7 @@ class _AdministratorState extends State<Administrator> {
       body: _widgetOptions[_selectedIndex],
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.refresh),
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.deepPurple,
         onPressed: _refreshList,
       ),
       bottomNavigationBar: BottomNavigationBar(
