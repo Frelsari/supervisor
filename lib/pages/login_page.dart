@@ -214,24 +214,39 @@ class Login extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 40.0),
+              SizedBox(height: 44.0),
               Text(
-                '點滴尿袋智慧監控系統',
+                'NTUT Lab 321',
                 style: TextStyle(
                   fontSize: 32.0,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 20.0),
+              Text(
+                '點滴尿袋智慧監控系統',
+                style: TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 8.0),
               Image.asset(
-                'images/TVGHE-logo.png',
+                'images/NTUT-logo.png',
                 height: 200.0,
                 width: 200.0,
               ),
-              SizedBox(height: 20.0),
+              SizedBox(height: 8.0),
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: LoginCard(),
+              ),
+              SizedBox(height: 20.0),
+              Text(
+                '特別感謝：台北榮民醫院 - 蘇澳暨圓山分院 協助開發',
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),

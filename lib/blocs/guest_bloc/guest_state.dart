@@ -4,6 +4,11 @@ abstract class GuestState extends Equatable {
   const GuestState();
 }
 
+class LoadingGuestState extends GuestState {
+  @override
+  List<Object> get props => [];
+}
+
 class ShowGuestState extends GuestState {
   final List<Map> guestList;
 

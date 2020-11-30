@@ -4,6 +4,11 @@ abstract class StaffState extends Equatable {
   const StaffState();
 }
 
+class LoadingStaffState extends StaffState {
+  @override
+  List<Object> get props => [];
+}
+
 class ShowStaffState extends StaffState {
   final List<Map> staffList;
 
