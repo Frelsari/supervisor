@@ -10,14 +10,14 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.1
-  cloud_firestore: ^0.14.3
-  firebase_core: ^0.5.2
+  cupertino_icons: ^1.0.1+1
+  cloud_firestore: ^0.14.3+1
+  firebase_core: ^0.5.2+1
   firebase_analytics: ^6.2.0
   flutter_ringtone_player: 2.0.0
-  connectivity: ^2.0.1
+  connectivity: ^2.0.2
   wakelock: ^0.2.1+1
-  firebase_auth: ^0.18.3
+  firebase_auth: ^0.18.3+1
   http: ^0.12.2
   bloc: ^6.1.0
   flutter_bloc: ^6.1.1
