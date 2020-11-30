@@ -28,7 +28,7 @@ class _GuestState extends State<Guest> {
     } else {
       return Colors.black12;
     }
-  }ga
+  }
 
   @override
   void initState() {
