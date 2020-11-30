@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "sourceMap": false,
     "strict": true,
-    "target": "es5",
+    "target": "es3",
     "importHelpers": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true

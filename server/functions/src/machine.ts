@@ -22,7 +22,7 @@ const isThisMachineRegisteredAGuestAccount = async (machineId: string): Promise<
   return !isEmptyObject(guestUser)
 }
 
-const createGuest = (position?: string): GuestUser => {
+const generateNewGuestData = (position?: string): GuestUser => {
   // 1. generate a empty serialNumber.
   const serialNumber = ""
   
@@ -34,6 +34,21 @@ const createGuest = (position?: string): GuestUser => {
     position: position ? position : 'unknown room',
     role: 'guest'
   } as GuestUser
+}
+
+const createNewGuest = async (machinePosition: string, machineId: string): Promise<void> => {
+  // generate a default config to guest collection (an empty guest account).
+  const newGuestData = generateNewGuestData(machinePosition)
+  
+  // use this empty config to create a guest document.
+  try {
+    await admin.firestore()
+      .collection('/guests')
+      .doc(machineId)
+      .set(newGuestData as GuestUser)
+  } catch (e) {
+    logger.error('could not create a guest document in /guests.\n' + e)
+  }
 }
 
 export const getMachineData = async (machineId: string): Promise<Machine | undefined> => {
@@ -63,20 +78,9 @@ export const onCreateMachine = functions.firestore.document('/NTUTLab321/{machin
     
     // check if this machine is new to firebase.
     if (!(await isThisMachineRegisteredAGuestAccount(machineId))) {
-      // generate a default config to guest collection (an empty guest account).
-      const defaultGuestConfig = createGuest(machinePosition)
-      
-      // use this empty config to create a guest document.
-      try {
-        await admin.firestore()
-          .collection('/guests')
-          .doc(machineId)
-          .set(defaultGuestConfig as GuestUser)
-      } catch (e) {
-        logger.error('could not create a guest document in /guests.\n' + e)
-      }
+      await createNewGuest(machinePosition, machineId)
     } else {
-      logger.info(machineId + ' is already exist in /guest.')
+      logger.info(machineId + ' is already exist in guest collection.')
     }
   })
 
@@ -95,7 +99,8 @@ export const onUpdateMachine = functions.firestore.document('/NTUTLab321/{machin
     // get the guest account that match to this machine.
     let guestDoc = await getGuest(machineId)
     if (isEmptyObject(guestDoc)) {
-      logger.error(`there is a machine(${machineId}) that not have a guest account!`)
+      logger.warn(`there is a machine(${machineId}) that not have a guest account! try to automatically create a new one...`)
+      await createNewGuest(machinePosition, machineId)
       return
     }
     
@@ -111,7 +116,7 @@ export const onUpdateMachine = functions.firestore.document('/NTUTLab321/{machin
           .doc(machineId)
           .update(guestDoc as GuestUser)
       } catch (e) {
-        logger.error('could not update a guest document in /guests.\n' + e)
+        logger.error('could not update a guest document in guests collection.\n' + e)
       }
     }
   })
