@@ -65,7 +65,7 @@ class StaffList extends StatelessWidget {
             style: TextStyle(color: Colors.deepPurple),
           ),
           onPressed: () {
-            // should check if args are valid
+            BlocProvider.of<StaffBloc>(context).add(LoadingStaffEvent());
             BlocProvider.of<StaffBloc>(context).add(AddStaffEvent(
               email: usernameController.text,
               password: passwordController.text,
@@ -106,39 +106,11 @@ class StaffList extends StatelessWidget {
                 style: TextStyle(color: Colors.deepPurple),
               ),
               onPressed: () {
+                BlocProvider.of<StaffBloc>(context).add(LoadingStaffEvent());
                 BlocProvider.of<StaffBloc>(context)
                     .add(DeleteStaffEvent(deleteUid: staff['uid']));
                 Navigator.pop(context);
               },
-            )
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _showStaffInfoDialog(BuildContext context, Map staff) async {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('用戶資料'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                Text('用戶名稱：${staff['displayName']}'),
-              ],
-            ),
-          ),
-          actions: [
-            FlatButton(
-              child: Text(
-                '確認',
-                style: TextStyle(
-                  color: Colors.deepPurple,
-                ),
-              ),
-              onPressed: () => Navigator.pop(context),
             )
           ],
         );

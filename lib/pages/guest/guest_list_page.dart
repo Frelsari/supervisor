@@ -80,7 +80,7 @@ class GuestList extends StatelessWidget {
               controller: expireController,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.timer_rounded),
-                hintText: '過期時間(天)',
+                hintText: '過期時間 (天)',
               ),
             ),
             SizedBox(height: 12.0),
@@ -102,6 +102,8 @@ class GuestList extends StatelessWidget {
           ),
           onPressed: () {
             final String expireText = expireController.text.trim();
+            BlocProvider.of<GuestBloc>(context).add(LoadingGuestEvent());
+
             if (expireText.contains(new RegExp('^[0-9]*\$'))) {
               BlocProvider.of<GuestBloc>(context)
                   .add(RegenerateSerialNumberEvent(
@@ -137,7 +139,6 @@ class GuestList extends StatelessWidget {
     return showDialog<void>(
       context: context,
       builder: (context) {
-        print('test');
         if ((!_isAdmin) && regenerateTime.compareTo(DateTime.now()) > 0)
           return regenerateBannedDialog;
         else
@@ -153,9 +154,8 @@ class GuestList extends StatelessWidget {
         final DateTime expireTime =
             new DateTime.fromMillisecondsSinceEpoch(guest['expire']);
         final Duration timeLeft = expireTime.difference(new DateTime.now());
-        // guest['position']
         return AlertDialog(
-          title: Text(guest['serialNumber']),
+          title: (guest['expire'] == -1 ? Text('未啟用帳號') : Text(guest['serialNumber'])),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +163,8 @@ class GuestList extends StatelessWidget {
                 Text(
                     '床室號：${guest['expire'] == -1 ? '尚未開始使用' : guest['position']}'),
                 SizedBox(height: 12.0),
-                Text('帳號過期時間：${formatTimeLeftToMessage(timeLeft)}'),
+                Text(
+                    '過期時間：${guest['expire'] == -1 ? '--' : formatTimeLeftToMessage(timeLeft)}'),
               ],
             ),
           ),
@@ -214,7 +215,12 @@ class GuestList extends StatelessWidget {
                     color: _themeColor,
                   ),
                 ),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  BlocProvider.of<GuestBloc>(context).add(LoadingGuestEvent());
+                  BlocProvider.of<GuestBloc>(context)
+                      .add(DeleteGuestEvent(machine: guest['machine']));
+                  Navigator.pop(context);
+                },
               ),
             ]);
       },
@@ -240,6 +246,63 @@ class GuestList extends StatelessWidget {
               itemCount: state.guestList.length,
               itemBuilder: (context, index) {
                 final Map guest = state.guestList[index];
+                final popupMenu = PopupMenuButton(
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'regenerateSerialNumber',
+                      child: Row(
+                        children: [
+                          Icon(Icons.fiber_new_rounded),
+                          SizedBox(width: 8.0),
+                          Text('產生流水號'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'deletePermanently',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_forever),
+                          SizedBox(width: 8.0),
+                          Text('刪除家屬帳號'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onSelected: (action) {
+                    switch (action) {
+                      case 'regenerateSerialNumber':
+                        _showRegenerateSerialNumberDialog(context, guest);
+                        break;
+                      case 'deletePermanently':
+                        _showDeleteGuestDialog(context, guest);
+                        break;
+                      default:
+                        print('@guest_list_page -> popup menu error');
+                    }
+                  },
+                );
+                if (guest['expire'] == -1) {
+                  return ListTile(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    leading: Container(
+                      width: 20.0,
+                      alignment: Alignment.center,
+                      child: Icon(Icons.fiber_new),
+                    ),
+                    title: Text(
+                      '未啟用帳號',
+                      style: TextStyle(
+                        // color: Colors.grey,
+                      ),
+                    ),
+                    subtitle: Text('產生流水號以啟用帳號'),
+                    trailing: popupMenu,
+                    onTap: () => _showGuestInfoDialog(context, guest),
+                  );
+                }
                 return ListTile(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -250,44 +313,8 @@ class GuestList extends StatelessWidget {
                     child: Icon(Icons.airline_seat_flat),
                   ),
                   title: Text(guest['serialNumber']),
-                  subtitle: Text(
-                      guest['expire'] == -1 ? '尚未開始使用' : guest['position']),
-                  trailing: PopupMenuButton(
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'regenerateSerialNumber',
-                        child: Row(
-                          children: [
-                            Icon(Icons.fiber_new_rounded),
-                            SizedBox(width: 8.0),
-                            Text('產生流水號'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'deletePermanently',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete_forever),
-                            SizedBox(width: 8.0),
-                            Text('刪除家屬帳號'),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onSelected: (action) {
-                      switch (action) {
-                        case 'regenerateSerialNumber':
-                          _showRegenerateSerialNumberDialog(context, guest);
-                          break;
-                        case 'deletePermanently':
-                          _showDeleteGuestDialog(context, guest);
-                          break;
-                        default:
-                          print('@guest_list_page -> popup menu error');
-                      }
-                    },
-                  ),
+                  subtitle: Text(guest['position']),
+                  trailing: popupMenu,
                   onTap: () => _showGuestInfoDialog(context, guest),
                 );
               },
