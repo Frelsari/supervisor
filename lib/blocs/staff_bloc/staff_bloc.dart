@@ -31,6 +31,8 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
       yield* _mapGetStaffEventToState();
     } else if (event is DeleteStaffEvent) {
       yield* _mapDeleteStaffEventToState(event.deleteUid);
+    } else if (event is LoadingStaffEvent) {
+      yield* _mapLoadingStaffEventToState();
     }
   }
 
@@ -82,5 +84,9 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
       print('JwtToken is not provided.');
       yield NoStaffState();
     }
+  }
+
+  Stream<StaffState> _mapLoadingStaffEventToState() async* {
+    yield LoadingStaffState();
   }
 }

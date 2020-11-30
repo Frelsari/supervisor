@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/staff_bloc/staff_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class StaffList extends StatelessWidget {
-  Future<void> _showAddStaffDialog(
-    BuildContext context,
-  ) async {
+  Future<void> _showAddStaffDialog(BuildContext context) async {
     final usernameController = TextEditingController();
     final passwordController = TextEditingController();
     final displayNameController = TextEditingController();
@@ -191,6 +190,18 @@ class StaffList extends StatelessWidget {
                   );
                 }
               },
+            );
+          } else if (state is LoadingStaffState) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SpinKitRing(color: Colors.deepPurple),
+                  SizedBox(height: 20.0),
+                  Text('載入資料中...', style: TextStyle(fontSize: 24.0)),
+                  SizedBox(height: 20.0),
+                ],
+              ),
             );
           } else {
             return Center(

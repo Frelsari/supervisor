@@ -17,44 +17,56 @@ class _AdministratorState extends State<Administrator> {
   int _selectedIndex = 0;
   final List<Widget> _widgetOptions = [StaffList(), GuestList(true)];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     _refreshList();
   }
 
-  Future<void> _refreshList() async {
-    BlocProvider.of<StaffBloc>(context).add(GetStaffEvent());
-    BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
-
-    final loadingDialog = AlertDialog(
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SpinKitRing(
-              color: Colors.black,
-              duration: Duration(seconds: 3),
-            ),
-            SizedBox(height: 12.0),
-            Text('正在載入...'),
-          ],
-        ),
-      ),
-    );
-    // return showDialog(
-    //   context: context,
-    //   builder: (context) => loadingDialog,
-    // );
+  void _onItemTapped(int index) {
+    setState(() => _selectedIndex = index);
   }
 
+  Future<void> _refreshList() async {
+    BlocProvider.of<StaffBloc>(context).add(LoadingStaffEvent());
+    BlocProvider.of<GuestBloc>(context).add(LoadingGuestEvent());
+
+    BlocProvider.of<StaffBloc>(context).add(GetStaffEvent());
+    BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('帳戶管理'),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: _widgetOptions[_selectedIndex],
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.refresh),
+        backgroundColor: Colors.deepPurple,
+        onPressed: _refreshList,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment_ind),
+            label: '醫護人員',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.airline_seat_flat),
+            label: '家屬床位',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.deepPurple,
+        onTap: _onItemTapped,
+      ),
+    );
+  }
+
+  // not used
   Future<void> _showAddUserDialog(BuildContext context) async {
     if (_selectedIndex == 0) {
       final usernameController = TextEditingController();
@@ -215,37 +227,5 @@ class _AdministratorState extends State<Administrator> {
         builder: (context) => _guestAlertDialog,
       );
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('帳戶管理'),
-        backgroundColor: Colors.deepPurple,
-        actions: [],
-      ),
-      body: _widgetOptions[_selectedIndex],
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.refresh),
-        backgroundColor: Colors.deepPurple,
-        onPressed: _refreshList,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_ind),
-            label: '醫護人員',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.airline_seat_flat),
-            label: '家屬床位',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.deepPurple,
-        onTap: _onItemTapped,
-      ),
-    );
   }
 }

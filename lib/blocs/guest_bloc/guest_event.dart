@@ -4,6 +4,11 @@ abstract class GuestEvent extends Equatable {
   const GuestEvent();
 }
 
+class LoadingGuestEvent extends GuestEvent {
+  @override
+  List<Object> get props => [];
+}
+
 class RegenerateSerialNumberEvent extends GuestEvent {
   final String machine;
   final String expireTime;

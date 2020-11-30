@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class GuestListPage extends StatelessWidget {
   final bool _isAdmin;
@@ -261,6 +262,18 @@ class GuestList extends StatelessWidget {
                   onTap: () => _showGuestInfoDialog(context, guest),
                 );
               },
+            );
+          } else if(state is LoadingGuestState) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SpinKitRing(color: Colors.deepPurple),
+                  SizedBox(height: 20.0),
+                  Text('載入資料中...', style: TextStyle(fontSize: 24.0)),
+                  SizedBox(height: 20.0),
+                ],
+              ),
             );
           } else {
             return Center(

@@ -4,6 +4,11 @@ abstract class StaffEvent extends Equatable {
   const StaffEvent();
 }
 
+class LoadingStaffEvent extends StaffEvent {
+  @override
+  List<Object> get props => [];
+}
+
 class AddStaffEvent extends StaffEvent {
   final String email, password, displayName;
 

@@ -31,6 +31,8 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
       yield* _mapGetGuestEventToState();
     } else if (event is DeleteGuestEvent) {
       yield* _mapDeleteGuestEventToState(event.machine);
+    } else if (event is LoadingGuestEvent) {
+      yield* _mapLoadingGuestEventToState();
     }
   }
 
@@ -87,5 +89,9 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
       print('JwtToken is not provided.');
       yield NoGuestState();
     }
+  }
+
+  Stream<GuestState> _mapLoadingGuestEventToState() async* {
+    yield LoadingGuestState();
   }
 }
