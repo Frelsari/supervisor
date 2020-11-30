@@ -42,7 +42,7 @@ class GuestList extends StatelessWidget {
       BuildContext context, Map guest) async {
     final expireController = TextEditingController();
     final regenerateSerialNumberDialog = AlertDialog(
-      title: Text('重新產生流水號'),
+      title: Text('產生流水號'),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,13 +90,13 @@ class GuestList extends StatelessWidget {
       ],
     );
     final regenerateBannedDialog = AlertDialog(
-      title: Text('重新產生流水號'),
+      title: Text('產生流水號'),
       content: Text('請稍後再產生新的流水號！'),
       actions: [
         FlatButton(
           child: Text(
             '確定',
-            style: TextStyle(color: Colors.deepPurple),
+            style: TextStyle(color: _themeColor),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -132,7 +132,7 @@ class GuestList extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('床室號：${guest['position']}'),
+                Text('床室號：${guest['position'] == 'unused' ? '尚未開始使用' : guest['position']}'),
                 SizedBox(height: 12.0),
                 Text('帳號過期時間：${formatTimeLeftToMessage(timeLeft)}'),
               ],
@@ -212,13 +212,16 @@ class GuestList extends StatelessWidget {
               itemBuilder: (context, index) {
                 final Map guest = state.guestList[index];
                 return ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
                   leading: Container(
                     width: 20.0,
                     alignment: Alignment.center,
                     child: Icon(Icons.airline_seat_flat),
                   ),
                   title: Text(guest['serialNumber']),
-                  subtitle: Text(guest['position']),
+                  subtitle: Text(guest['position'] == 'unused' ? '尚未開始使用' : guest['position']),
                   trailing: PopupMenuButton(
                     itemBuilder: (context) => [
                       PopupMenuItem(
@@ -227,7 +230,7 @@ class GuestList extends StatelessWidget {
                           children: [
                             Icon(Icons.fiber_new_rounded),
                             SizedBox(width: 8.0),
-                            Text('重生流水號'),
+                            Text('產生流水號'),
                           ],
                         ),
                       ),
@@ -237,7 +240,7 @@ class GuestList extends StatelessWidget {
                           children: [
                             Icon(Icons.delete_forever),
                             SizedBox(width: 8.0),
-                            Text('永久刪除'),
+                            Text('刪除家屬帳號'),
                           ],
                         ),
                       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class Guest extends StatefulWidget {
@@ -46,7 +47,8 @@ class _GuestState extends State<Guest> {
     super.initState();
     _data = widget.data;
     _firestore = FirebaseFirestore.instance;
-    dataStream = _firestore.collection('NTUTLab321').doc(_data['machine']).snapshots();
+    dataStream =
+        _firestore.collection('NTUTLab321').doc(_data['machine']).snapshots();
   }
 
   @override
@@ -73,12 +75,13 @@ class _GuestState extends State<Guest> {
             );
           } else {
             if (snapshot.hasData) {
+              print('@guest_page.dart -> snapshot.data = ${snapshot.data}');
+              _data['judge'] = snapshot.data['judge'];
               _data['alarm'] = snapshot.data['alarm'];
               _data['change'] = snapshot.data['change'];
               _data['modedescription'] = snapshot.data['modedescription'];
               _data['power'] = snapshot.data['power'];
               _data['time'] = snapshot.data['time'];
-              _data['title'] = snapshot.data['title'];
               print(_data);
             }
             switch (snapshot.connectionState) {
@@ -136,7 +139,7 @@ class _GuestState extends State<Guest> {
                           ),
                           SizedBox(width: 20.0),
                           Text(
-                            _data['judge'],
+                            _data['judge'] == 'unused' ? '尚未開始使用' : _data['judge'],
                             style: TextStyle(fontSize: 20.0),
                           ),
                         ],

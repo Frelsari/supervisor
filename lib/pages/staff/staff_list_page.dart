@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/staff_bloc/staff_bloc.dart';
 
 class StaffList extends StatelessWidget {
-  Future<void> _showAddStaffDialog(BuildContext context,) async {
+  Future<void> _showAddStaffDialog(
+    BuildContext context,
+  ) async {
     final usernameController = TextEditingController();
     final passwordController = TextEditingController();
     final displayNameController = TextEditingController();
@@ -156,6 +158,9 @@ class StaffList extends StatelessWidget {
               itemBuilder: (context, index) {
                 if (index == state.staffList.length) {
                   return ListTile(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                     leading: Icon(Icons.add, color: Colors.deepPurple),
                     title: Text(
                       '新增醫護人員',
@@ -169,6 +174,9 @@ class StaffList extends StatelessWidget {
                 } else {
                   final Map staff = state.staffList[index];
                   return ListTile(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                     leading: Container(
                       width: 20.0,
                       alignment: Alignment.center,

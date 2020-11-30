@@ -49,10 +49,10 @@ class _AdministratorState extends State<Administrator> {
         ),
       ),
     );
-    return showDialog(
-      context: context,
-      builder: (context) => loadingDialog,
-    );
+    // return showDialog(
+    //   context: context,
+    //   builder: (context) => loadingDialog,
+    // );
   }
 
   Future<void> _showAddUserDialog(BuildContext context) async {
