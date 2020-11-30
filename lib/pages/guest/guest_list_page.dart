@@ -11,6 +11,7 @@ class GuestListPage extends StatelessWidget {
   GuestListPage(bool isAdmin) : _isAdmin = isAdmin;
 
   Future<void> _refreshList(BuildContext context) async {
+    BlocProvider.of<GuestBloc>(context).add(LoadingGuestEvent());
     BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
   }
 
