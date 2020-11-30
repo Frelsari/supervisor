@@ -127,15 +127,14 @@ class GuestList extends StatelessWidget {
         final DateTime expireTime =
             new DateTime.fromMillisecondsSinceEpoch(guest['expire']);
         final Duration timeLeft = expireTime.difference(new DateTime.now());
-
+        // guest['position']
         return AlertDialog(
           title: Text(guest['serialNumber']),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                    '床室號：${guest['position'] == 'unused' ? '尚未開始使用' : guest['position']}'),
+                Text('床室號：${guest['expire'] == -1 ? '尚未開始使用' : guest['position']}'),
                 SizedBox(height: 12.0),
                 Text('帳號過期時間：${formatTimeLeftToMessage(timeLeft)}'),
               ],
@@ -224,7 +223,7 @@ class GuestList extends StatelessWidget {
                     child: Icon(Icons.airline_seat_flat),
                   ),
                   title: Text(guest['serialNumber']),
-                  subtitle: Text(guest['position'] == 'unused'
+                  subtitle: Text(guest['expire'] == -1
                       ? '尚未開始使用'
                       : guest['position']),
                   trailing: PopupMenuButton(

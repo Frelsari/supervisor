@@ -122,13 +122,13 @@ class _GuestState extends State<Guest> {
                           Text(
                             '床室號',
                             style: TextStyle(
-                                fontSize: 24.0, fontWeight: FontWeight.bold),
+                              fontSize: 24.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           SizedBox(width: 20.0),
                           Text(
-                            _data['judge'] == 'unused'
-                                ? '尚未開始使用'
-                                : _data['judge'],
+                            _data['expire'] == -1 ? '尚未開始使用' : _data['judge'],
                             style: TextStyle(fontSize: 20.0),
                           ),
                         ],
