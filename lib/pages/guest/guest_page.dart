@@ -1,3 +1,4 @@
+import 'package:firevisor/custom_widgets/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -27,19 +28,7 @@ class _GuestState extends State<Guest> {
     } else {
       return Colors.black12;
     }
-  }
-
-  Widget messageColumn({Widget child, String text}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        child,
-        SizedBox(height: 20.0),
-        Text(text, style: TextStyle(fontSize: 24.0)),
-        SizedBox(height: 20.0),
-      ],
-    );
-  }
+  }ga
 
   @override
   void initState() {
@@ -61,15 +50,14 @@ class _GuestState extends State<Guest> {
         stream: dataStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            print('@guest_page.dart -> snapshot.error -> ${snapshot.error.toString()}');
-            return Center(
-              child: messageColumn(
-                text: '資料載入出現問題，請稍後再試',
-                child: Icon(
-                  Icons.error_outline,
-                  color: Colors.lightBlue,
-                  size: 48.0,
-                ),
+            print(
+                '@guest_page.dart -> snapshot.error -> ${snapshot.error.toString()}');
+            return MessageScreen(
+              message: '資料載入出現問題，請稍後再試',
+              child: Icon(
+                Icons.error_outline,
+                color: Colors.lightBlue,
+                size: 48.0,
               ),
             );
           } else {
@@ -138,7 +126,9 @@ class _GuestState extends State<Guest> {
                           ),
                           SizedBox(width: 20.0),
                           Text(
-                            _data['judge'] == 'unused' ? '尚未開始使用' : _data['judge'],
+                            _data['judge'] == 'unused'
+                                ? '尚未開始使用'
+                                : _data['judge'],
                             style: TextStyle(fontSize: 20.0),
                           ),
                         ],
@@ -214,32 +204,26 @@ class _GuestState extends State<Guest> {
                   ),
                 );
               case ConnectionState.waiting:
-                return Center(
-                  child: messageColumn(
-                    text: '載入資料中...',
-                    child: SpinKitRing(color: Colors.lightBlue),
-                  ),
+                return MessageScreen(
+                  message: '載入資料中...',
+                  child: SpinKitRing(color: Colors.lightBlue),
                 );
               case ConnectionState.none:
-                return Center(
-                  child: messageColumn(
-                    text: '請檢查手機連線',
-                    child: Icon(
-                      Icons.perm_scan_wifi_rounded,
-                      color: Colors.lightBlue,
-                      size: 48.0,
-                    ),
+                return MessageScreen(
+                  message: '請檢查手機連線',
+                  child: Icon(
+                    Icons.perm_scan_wifi_rounded,
+                    color: Colors.lightBlue,
+                    size: 48.0,
                   ),
                 );
               default:
-                return Center(
-                  child: messageColumn(
-                    text: 'Unexpected error',
-                    child: Icon(
-                      Icons.error_outline,
-                      color: Colors.lightBlue,
-                      size: 48.0,
-                    ),
+                return MessageScreen(
+                  message: 'Unexpected error',
+                  child: Icon(
+                    Icons.warning_outlined,
+                    color: Colors.lightBlue,
+                    size: 48.0,
                   ),
                 );
             }

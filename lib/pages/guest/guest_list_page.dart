@@ -1,3 +1,4 @@
+import 'package:firevisor/custom_widgets/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
@@ -133,7 +134,8 @@ class GuestList extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('床室號：${guest['position'] == 'unused' ? '尚未開始使用' : guest['position']}'),
+                Text(
+                    '床室號：${guest['position'] == 'unused' ? '尚未開始使用' : guest['position']}'),
                 SizedBox(height: 12.0),
                 Text('帳號過期時間：${formatTimeLeftToMessage(timeLeft)}'),
               ],
@@ -222,7 +224,9 @@ class GuestList extends StatelessWidget {
                     child: Icon(Icons.airline_seat_flat),
                   ),
                   title: Text(guest['serialNumber']),
-                  subtitle: Text(guest['position'] == 'unused' ? '尚未開始使用' : guest['position']),
+                  subtitle: Text(guest['position'] == 'unused'
+                      ? '尚未開始使用'
+                      : guest['position']),
                   trailing: PopupMenuButton(
                     itemBuilder: (context) => [
                       PopupMenuItem(
@@ -263,21 +267,19 @@ class GuestList extends StatelessWidget {
                 );
               },
             );
-          } else if(state is LoadingGuestState) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SpinKitRing(color: Colors.deepPurple),
-                  SizedBox(height: 20.0),
-                  Text('載入資料中...', style: TextStyle(fontSize: 24.0)),
-                  SizedBox(height: 20.0),
-                ],
-              ),
+          } else if (state is LoadingGuestState) {
+            return MessageScreen(
+              message: '載入資料中...',
+              child: SpinKitRing(color: _themeColor),
             );
           } else {
-            return Center(
-              child: Text('無使用者'),
+            return MessageScreen(
+              message: '無使用者資料',
+              child: Icon(
+                Icons.error_outline,
+                color: _themeColor,
+                size: 48.0,
+              ),
             );
           }
         },

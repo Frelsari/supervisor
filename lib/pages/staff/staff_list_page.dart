@@ -1,3 +1,4 @@
+import 'package:firevisor/custom_widgets/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/staff_bloc/staff_bloc.dart';
@@ -192,20 +193,18 @@ class StaffList extends StatelessWidget {
               },
             );
           } else if (state is LoadingStaffState) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SpinKitRing(color: Colors.deepPurple),
-                  SizedBox(height: 20.0),
-                  Text('載入資料中...', style: TextStyle(fontSize: 24.0)),
-                  SizedBox(height: 20.0),
-                ],
-              ),
+            return MessageScreen(
+              message: '載入資料中...',
+              child: SpinKitRing(color: Colors.deepPurple),
             );
           } else {
-            return Center(
-              child: Text('無使用者'),
+            return MessageScreen(
+              message: '無使用者資料',
+              child: Icon(
+                Icons.error_outline,
+                color: Colors.deepPurple,
+                size: 48.0,
+              ),
             );
           }
         },
