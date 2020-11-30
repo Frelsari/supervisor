@@ -14,6 +14,7 @@ class Administrator extends StatefulWidget {
 
 class _AdministratorState extends State<Administrator> {
   int _selectedIndex = 0;
+  bool _isLoading = false;
   final List<Widget> _widgetOptions = [StaffList(), GuestList(true)];
 
   @override
@@ -29,38 +30,55 @@ class _AdministratorState extends State<Administrator> {
   Future<void> _refreshList() async {
     BlocProvider.of<StaffBloc>(context).add(LoadingStaffEvent());
     BlocProvider.of<GuestBloc>(context).add(LoadingGuestEvent());
-
     BlocProvider.of<StaffBloc>(context).add(GetStaffEvent());
     BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('帳戶管理'),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: _widgetOptions[_selectedIndex],
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.refresh),
-        backgroundColor: Colors.deepPurple,
-        onPressed: _refreshList,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_ind),
-            label: '醫護人員',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.airline_seat_flat),
-            label: '家屬床位',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.deepPurple,
-        onTap: _onItemTapped,
+    var staffState = BlocProvider.of<StaffBloc>(context).state;
+    var guestState = BlocProvider.of<GuestBloc>(context).state;
+    _isLoading = (staffState is LoadingStaffState) || (guestState is LoadingGuestState);
+
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<StaffBloc, StaffState>(
+          listener: (context, state) {
+            setState(() {});
+          },
+        ),
+        BlocListener<GuestBloc, GuestState>(
+          listener: (context, state) {
+            setState(() {});
+          },
+        ),
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('帳戶管理'),
+          backgroundColor: Colors.deepPurple,
+        ),
+        body: _widgetOptions[_selectedIndex],
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.refresh),
+          backgroundColor: _isLoading ? Colors.grey : Colors.deepPurple,
+          onPressed: _isLoading ? null : _refreshList,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.assignment_ind),
+              label: '醫護人員',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.airline_seat_flat),
+              label: '家屬床位',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.deepPurple,
+          onTap: _onItemTapped,
+        ),
       ),
     );
   }

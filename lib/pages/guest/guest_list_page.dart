@@ -1,32 +1,57 @@
+import 'package:firevisor/blocs/staff_bloc/staff_bloc.dart';
 import 'package:firevisor/custom_widgets/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-class GuestListPage extends StatelessWidget {
-  final bool _isAdmin;
+class GuestListPage extends StatefulWidget {
+  final isAdmin;
 
   @override
-  GuestListPage(bool isAdmin) : _isAdmin = isAdmin;
+  GuestListPage(bool admin) : isAdmin = admin;
 
-  Future<void> _refreshList(BuildContext context) async {
+  @override
+  _GuestListPageState createState() => _GuestListPageState();
+}
+
+class _GuestListPageState extends State<GuestListPage> {
+  Color _themeColor;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _themeColor = widget.isAdmin ? Colors.deepPurple : Colors.indigo;
+    _refreshList();
+  }
+
+  Future<void> _refreshList() async {
     BlocProvider.of<GuestBloc>(context).add(LoadingGuestEvent());
     BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('帳戶管理'),
-        backgroundColor: _isAdmin ? Colors.deepPurple : Colors.indigo,
-      ),
-      body: GuestList(_isAdmin),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.refresh),
-        backgroundColor: Colors.indigo,
-        onPressed: () => _refreshList(context),
+    return BlocListener<GuestBloc, GuestState>(
+      listener: (context, state) {
+        if (state is LoadingGuestState) {
+          setState(() => _isLoading = true);
+        } else {
+          setState(() => _isLoading = false);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('帳戶管理'),
+          backgroundColor: _themeColor,
+        ),
+        body: GuestList(widget.isAdmin),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.refresh),
+          backgroundColor: _isLoading ? Colors.grey : _themeColor,
+          onPressed: _refreshList,
+        ),
       ),
     );
   }
@@ -135,7 +160,8 @@ class GuestList extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('床室號：${guest['expire'] == -1 ? '尚未開始使用' : guest['position']}'),
+                Text(
+                    '床室號：${guest['expire'] == -1 ? '尚未開始使用' : guest['position']}'),
                 SizedBox(height: 12.0),
                 Text('帳號過期時間：${formatTimeLeftToMessage(timeLeft)}'),
               ],
@@ -224,9 +250,8 @@ class GuestList extends StatelessWidget {
                     child: Icon(Icons.airline_seat_flat),
                   ),
                   title: Text(guest['serialNumber']),
-                  subtitle: Text(guest['expire'] == -1
-                      ? '尚未開始使用'
-                      : guest['position']),
+                  subtitle: Text(
+                      guest['expire'] == -1 ? '尚未開始使用' : guest['position']),
                   trailing: PopupMenuButton(
                     itemBuilder: (context) => [
                       PopupMenuItem(
