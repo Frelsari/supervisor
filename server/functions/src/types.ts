@@ -44,7 +44,8 @@ export interface RequirementOfDeleteSpecificGuest {
 }
 
 export interface Machine {
-  readonly judge: string,
+  judge?: string,
+  title?: string,
   readonly alarm?: string,
   readonly change?: string,
   readonly modedescription?: string

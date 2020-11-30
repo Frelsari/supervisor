@@ -31,7 +31,7 @@ const generateNewGuestData = (position?: string): GuestUser => {
     serialNumber,
     expire: -1, // use -1 to mark as a un-initialized guest account.
     reGenerateSerialNumberTime: 0,
-    position: position ? position : 'unknown room',
+    position: position ? position : 'unknown',
     role: 'guest'
   } as GuestUser
 }
@@ -53,10 +53,26 @@ const createNewGuest = async (machinePosition: string, machineId: string): Promi
 
 export const getMachineData = async (machineId: string): Promise<Machine | undefined> => {
   try {
-    return (await admin.firestore()
+    const machineData = (await admin.firestore()
       .collection('NTUTLab321')
       .doc(machineId.toString().trim())
       .get()).data() as unknown as Machine
+    
+    // detect schema version.
+    if (!('judge' in machineData)) {
+      if ('title' in machineData) {
+        machineData.judge = machineData.title
+      } else {
+        machineData.judge = "unknown"
+      }
+    }
+    
+    // remove title property anyway.
+    if ('title' in machineData) {
+      delete machineData.title
+    }
+    
+    return machineData
   } catch (e) {
     logger.warn(`Could not get the machine data! request machineId(${machineId}) may not exist.`)
     return undefined
@@ -68,7 +84,7 @@ export const onCreateMachine = functions.firestore.document('/NTUTLab321/{machin
   .onCreate(async (snapshot) => {
     const data = snapshot.data() as Machine
     const machineId = snapshot.id
-    const machinePosition = data.judge
+    const machinePosition = data.judge ?? data.title
     
     // validate the data
     if (isEmptyObject(data) || !machinePosition) {
@@ -88,7 +104,7 @@ export const onUpdateMachine = functions.firestore.document('/NTUTLab321/{machin
   .onUpdate(async (change) => {
     const data = change.after.data() as Machine
     const machineId = change.after.id
-    const machinePosition = data.judge
+    const machinePosition = data.judge ?? data.title
     
     // validate the data
     if (isEmptyObject(data) || !machinePosition) {
@@ -141,7 +157,7 @@ export const onDeleteMachine = functions.firestore.document('/NTUTLab321/{machin
           .doc(machineId)
           .delete()
       } catch (e) {
-        logger.error('could not delete a guest document in /guests.\n' + e)
+        logger.error('could not delete a guest document in guests collection.\n' + e)
       }
     } else {
       logger.info(`This machine(${machineId}) is already lost its guest account, delete operation done.`)

@@ -97,6 +97,8 @@ export default functions.https.onRequest(async (req: Request, resp) => {
       let machineData!: Machine
       if (guestDocumentId) {
         machineData = await getMachineData(guestDocumentId) as Machine
+        
+        // detect existed.
         if (isEmptyObject(machineData)) {
           resp.status(404).send('Could not find the machine data by this machineId.')
           return
