@@ -180,25 +180,24 @@ class _GuestState extends State<Guest> {
                         padding: const EdgeInsets.all(20.0),
                         child: Divider(color: Colors.black),
                       ),
-                      SingleChildScrollView(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(width: 40.0),
-                            Text(
-                              '工作紀錄',
-                              style: TextStyle(
-                                  fontSize: 24.0, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(width: 20.0),
-                            Text(
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(width: 40.0),
+                          Text(
+                            '工作紀錄',
+                            style: TextStyle(
+                                fontSize: 24.0, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(width: 20.0),
+                          Flexible(
+                            child: Text(
                               _data['time'],
-                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(fontSize: 20.0),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                       Padding(
                         padding: const EdgeInsets.all(20.0),
