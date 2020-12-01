@@ -1,6 +1,7 @@
 import 'package:firevisor/blocs/staff_bloc/staff_bloc.dart';
 import 'package:firevisor/custom_widgets/message_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -68,23 +69,90 @@ class GuestList extends StatelessWidget {
 
   Future<void> _showRegenerateSerialNumberDialog(
       BuildContext context, Map guest) async {
-    final expireController = TextEditingController();
+    int _days = 1;
+    final daysController = TextEditingController();
     final regenerateSerialNumberDialog = AlertDialog(
       title: Text('產生流水號'),
       content: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              keyboardType: TextInputType.datetime,
-              controller: expireController,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.timer_rounded),
-                hintText: '過期時間 (天)',
-              ),
-            ),
-            SizedBox(height: 12.0),
-          ],
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ListTile(
+                  leading: Radio(
+                    value: 1,
+                    groupValue: _days,
+                    onChanged: (value) {
+                      setState(() => _days = value);
+                    },
+                  ),
+                  title: Text('1 天'),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                ListTile(
+                  leading: Radio(
+                    value: 2,
+                    groupValue: _days,
+                    onChanged: (value) {
+                      setState(() => _days = value);
+                    },
+                  ),
+                  title: Text('2 天'),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                ListTile(
+                  leading: Radio(
+                    value: 5,
+                    groupValue: _days,
+                    onChanged: (value) {
+                      setState(() => _days = value);
+                    },
+                  ),
+                  title: Text('5 天'),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                ListTile(
+                  leading: Radio(
+                    value: 7,
+                    groupValue: _days,
+                    onChanged: (value) {
+                      setState(() => _days = value);
+                    },
+                  ),
+                  title: Text('7 天'),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                ListTile(
+                  leading: Radio(
+                    value: -1,
+                    groupValue: _days,
+                    onChanged: (value) {
+                      setState(() => _days = value);
+                    },
+                  ),
+                  title: TextField(
+                    controller: daysController,
+                    keyboardType: TextInputType.numberWithOptions(),
+                    decoration: InputDecoration(
+                      labelText: '自訂 (天)',
+                    ),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
       actions: [
@@ -101,18 +169,26 @@ class GuestList extends StatelessWidget {
             style: TextStyle(color: _themeColor),
           ),
           onPressed: () {
-            final String expireText = expireController.text.trim();
             BlocProvider.of<GuestBloc>(context).add(LoadingGuestEvent());
-
-            if (expireText.contains(new RegExp('^[0-9]*\$'))) {
+            if (_days != -1) {
               BlocProvider.of<GuestBloc>(context)
                   .add(RegenerateSerialNumberEvent(
                 machine: guest['machine'],
-                expireTime: expireText,
+                expireTime: _days.toString(),
                 position: guest['position'],
               ));
             } else {
-              print('Expire time can only contain numbers');
+              final String daysText = daysController.text.trim();
+              if (daysText.contains(RegExp('^[0-9]*\$'))) {
+                BlocProvider.of<GuestBloc>(context)
+                    .add(RegenerateSerialNumberEvent(
+                  machine: guest['machine'],
+                  expireTime: daysText,
+                  position: guest['position'],
+                ));
+              } else {
+                print('Input type not valid');
+              }
             }
             Navigator.pop(context);
           },
