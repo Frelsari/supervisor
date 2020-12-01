@@ -369,7 +369,7 @@ class GuestList extends StatelessWidget {
                       child: Icon(Icons.fiber_new),
                     ),
                     title: Text(
-                      '未啟用帳號',
+                      guest['position'] == 'unused' ? '未啟用帳號' : guest['position'],
                       style: TextStyle(
                         // color: Colors.grey,
                       ),
