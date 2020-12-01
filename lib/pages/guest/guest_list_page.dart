@@ -72,83 +72,78 @@ class GuestList extends StatelessWidget {
     int _days = 1;
     final daysController = TextEditingController();
     final regenerateSerialNumberDialog = AlertDialog(
-      title: Text('產生流水號'),
+      title: Text('設定流水號期限'),
       content: SingleChildScrollView(
         child: StatefulBuilder(
           builder: (context, setState) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ListTile(
-                  leading: Radio(
-                    value: 1,
-                    groupValue: _days,
-                    onChanged: (value) {
-                      setState(() => _days = value);
-                    },
-                  ),
-                  title: Text('1 天'),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-                ListTile(
-                  leading: Radio(
-                    value: 2,
-                    groupValue: _days,
-                    onChanged: (value) {
-                      setState(() => _days = value);
-                    },
-                  ),
-                  title: Text('2 天'),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-                ListTile(
-                  leading: Radio(
-                    value: 5,
-                    groupValue: _days,
-                    onChanged: (value) {
-                      setState(() => _days = value);
-                    },
-                  ),
-                  title: Text('5 天'),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-                ListTile(
-                  leading: Radio(
-                    value: 7,
-                    groupValue: _days,
-                    onChanged: (value) {
-                      setState(() => _days = value);
-                    },
-                  ),
-                  title: Text('7 天'),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-                ListTile(
-                  leading: Radio(
-                    value: -1,
-                    groupValue: _days,
-                    onChanged: (value) {
-                      setState(() => _days = value);
-                    },
-                  ),
-                  title: TextField(
-                    controller: daysController,
-                    keyboardType: TextInputType.numberWithOptions(),
-                    decoration: InputDecoration(
-                      labelText: '自訂 (天)',
+                Row(
+                  children: [
+                    Radio(
+                      value: 1,
+                      groupValue: _days,
+                      onChanged: (value) {
+                        setState(() => _days = value);
+                      },
                     ),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
+                    Text('1 天', style: TextStyle(fontSize: 20.0)),
+                    SizedBox(width: 16.0),
+                    Radio(
+                      value: 2,
+                      groupValue: _days,
+                      onChanged: (value) {
+                        setState(() => _days = value);
+                      },
+                    ),
+                    Text('2 天', style: TextStyle(fontSize: 20.0)),
+                  ],
+                ),
+                SizedBox(height: 12.0),
+                Row(
+                  children: [
+                    Radio(
+                      value: 5,
+                      groupValue: _days,
+                      onChanged: (value) {
+                        setState(() => _days = value);
+                      },
+                    ),
+                    Text('5 天', style: TextStyle(fontSize: 20.0)),
+                    SizedBox(width: 16.0),
+                    Radio(
+                      value: 7,
+                      groupValue: _days,
+                      onChanged: (value) {
+                        setState(() => _days = value);
+                      },
+                    ),
+                    Text('7 天', style: TextStyle(fontSize: 20.0)),
+                  ],
+                ),
+                SizedBox(height: 12.0),
+                Row(
+                  children: [
+                    Radio(
+                      value: -1,
+                      groupValue: _days,
+                      onChanged: (value) {
+                        setState(() => _days = value);
+                      },
+                    ),
+                    SizedBox(
+                      width: 160.0,
+                      child: TextField(
+                        controller: daysController,
+                        keyboardType: TextInputType.numberWithOptions(),
+                        decoration: InputDecoration(
+                          labelText: '自訂 (天)',
+                        ),
+
+                      ),
+                    ),
+                  ],
                 ),
               ],
             );
