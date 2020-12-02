@@ -62,52 +62,52 @@ class _SupervisorState extends State<Supervisor> {
                   ),
                 ),
                 PopupMenuDivider(height: 1.0),
-                PopupMenuItem(
-                  child: RadioListTile(
-                    title: Text('編號排序'),
-                    value: lists.number,
-                    groupValue: choose,
-                    onChanged: (lists value) {
-                      setState(
-                        () {
-                          choose = value;
-                        },
-                      );
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-                PopupMenuItem(
-                  child: RadioListTile(
-                    title: Text('狀態排序'),
-                    value: lists.state,
-                    groupValue: choose,
-                    onChanged: (lists value) {
-                      setState(
-                        () {
-                          choose = value;
-                        },
-                      );
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-                PopupMenuItem(
-                  child: RadioListTile(
-                    title: Text('電量排序'),
-                    value: lists.battery,
-                    groupValue: choose,
-                    onChanged: (lists value) {
-                      setState(
-                        () {
-                          choose = value;
-                        },
-                      );
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-                PopupMenuDivider(height: 1.0),
+//                PopupMenuItem(
+//                  child: RadioListTile(
+//                    title: Text('編號排序'),
+//                    value: lists.number,
+//                    groupValue: choose,
+//                    onChanged: (lists value) {
+//                      setState(
+//                        () {
+//                          choose = value;
+//                        },
+//                      );
+//                      Navigator.pop(context);
+//                    },
+//                  ),
+//                ),
+//                PopupMenuItem(
+//                  child: RadioListTile(
+//                    title: Text('狀態排序'),
+//                    value: lists.state,
+//                    groupValue: choose,
+//                    onChanged: (lists value) {
+//                      setState(
+//                        () {
+//                          choose = value;
+//                        },
+//                      );
+//                      Navigator.pop(context);
+//                    },
+//                  ),
+//                ),
+////                PopupMenuItem(
+////                  child: RadioListTile(
+////                    title: Text('電量排序'),
+////                    value: lists.battery,
+////                    groupValue: choose,
+////                    onChanged: (lists value) {
+////                      setState(
+////                        () {
+////                          choose = value;
+////                        },
+////                      );
+////                      Navigator.pop(context);
+////                    },
+////                  ),
+////                ),
+//                PopupMenuDivider(height: 1.0),
                 PopupMenuItem(
                   child: ListTile(
                     leading: Icon(Icons.account_circle),
@@ -159,10 +159,10 @@ class _SupervisorState extends State<Supervisor> {
                                 label: Text('光譜圖'),
                               ),*/
                               DataColumn(
-                                label: Text('工作狀態'),
+                                label: Text('工作紀錄'),
                               ),
                               DataColumn(
-                                label: Text('資料刪除'),
+                                label: Text('更換病人'),
                               )
                             ],
                             rows: createRows(snapshot.data),
@@ -235,15 +235,15 @@ class _SupervisorState extends State<Supervisor> {
                 icon: Icon(Icons.photo),
                 onPressed: () {},
               ),
-            ),*/
-            DataCell(
+                ),*/
+        DataCell(
               Text(
                 documentSnapshot['time'],
               ),
             ),
             DataCell(
               GestureDetector(
-                child: Icon(Icons.delete),
+                child: Icon(Icons.redo),
                 onTap: () {
                   return showDialog(
                     context: context,
@@ -263,7 +263,14 @@ class _SupervisorState extends State<Supervisor> {
                             firestore
                                 .collection('NTUTLab321')
                                 .doc(documentSnapshot.id)
-                                .delete();
+                                .set({
+                              'change': 'X',
+                              'modedescription': '初始資料',
+                              'time': '暫無資訊',
+                              'alarm': '0',
+                              'judge' : 'unused',
+                              'power': '0',
+                            });
                             Navigator.pop(context);
                           },
                         ),
@@ -378,11 +385,11 @@ Stream<QuerySnapshot> _stream(var change) {
           .collection('NTUTLab321')
           .orderBy('change', descending: true)
           .snapshots();
-    case lists.battery:
-      return firestore
-          .collection('NTUTLab321')
-          .orderBy('power', descending: false)
-          .snapshots();
+//    case lists.battery:
+//      return firestore
+//          .collection('NTUTLab321')
+//          .orderBy('power', descending: false)
+//          .snapshots();
     default:
       return firestore
           .collection('NTUTLab321')
