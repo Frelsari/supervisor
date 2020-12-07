@@ -62,52 +62,52 @@ class _SupervisorState extends State<Supervisor> {
                   ),
                 ),
                 PopupMenuDivider(height: 1.0),
-//                PopupMenuItem(
-//                  child: RadioListTile(
-//                    title: Text('編號排序'),
-//                    value: lists.number,
-//                    groupValue: choose,
-//                    onChanged: (lists value) {
-//                      setState(
-//                        () {
-//                          choose = value;
-//                        },
-//                      );
-//                      Navigator.pop(context);
-//                    },
-//                  ),
-//                ),
-//                PopupMenuItem(
-//                  child: RadioListTile(
-//                    title: Text('狀態排序'),
-//                    value: lists.state,
-//                    groupValue: choose,
-//                    onChanged: (lists value) {
-//                      setState(
-//                        () {
-//                          choose = value;
-//                        },
-//                      );
-//                      Navigator.pop(context);
-//                    },
-//                  ),
-//                ),
-////                PopupMenuItem(
-////                  child: RadioListTile(
-////                    title: Text('電量排序'),
-////                    value: lists.battery,
-////                    groupValue: choose,
-////                    onChanged: (lists value) {
-////                      setState(
-////                        () {
-////                          choose = value;
-////                        },
-////                      );
-////                      Navigator.pop(context);
-////                    },
-////                  ),
-////                ),
-//                PopupMenuDivider(height: 1.0),
+               PopupMenuItem(
+                 child: RadioListTile(
+                   title: Text('編號排序'),
+                   value: lists.number,
+                   groupValue: choose,
+                   onChanged: (lists value) {
+                     setState(
+                       () {
+                         choose = value;
+                       },
+                     );
+                     Navigator.pop(context);
+                   },
+                 ),
+               ),
+               PopupMenuItem(
+                 child: RadioListTile(
+                   title: Text('狀態排序'),
+                   value: lists.state,
+                   groupValue: choose,
+                   onChanged: (lists value) {
+                     setState(
+                       () {
+                         choose = value;
+                       },
+                     );
+                     Navigator.pop(context);
+                   },
+                 ),
+               ),
+               PopupMenuItem(
+                 child: RadioListTile(
+                   title: Text('電量排序'),
+                   value: lists.battery,
+                   groupValue: choose,
+                   onChanged: (lists value) {
+                     setState(
+                       () {
+                         choose = value;
+                       },
+                     );
+                     Navigator.pop(context);
+                   },
+                 ),
+               ),
+               PopupMenuDivider(height: 1.0),
                 PopupMenuItem(
                   child: ListTile(
                     leading: Icon(Icons.account_circle),
@@ -385,11 +385,11 @@ Stream<QuerySnapshot> _stream(var change) {
           .collection('NTUTLab321')
           .orderBy('change', descending: true)
           .snapshots();
-//    case lists.battery:
-//      return firestore
-//          .collection('NTUTLab321')
-//          .orderBy('power', descending: false)
-//          .snapshots();
+   case lists.battery:
+     return firestore
+         .collection('NTUTLab321')
+         .orderBy('power', descending: false)
+         .snapshots();
     default:
       return firestore
           .collection('NTUTLab321')
