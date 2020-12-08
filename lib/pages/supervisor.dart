@@ -264,10 +264,8 @@ class _SupervisorState extends State<Supervisor> {
                                 .collection('NTUTLab321')
                                 .doc(documentSnapshot.id)
                                 .set({
-                              'change': 'X',
-                              'modedescription': '初始資料',
-                              'time': '暫無資訊',
-                              'alarm': '0',
+                              
+                             
                               'judge' : 'unused',
                               'power': '0',
                             });
