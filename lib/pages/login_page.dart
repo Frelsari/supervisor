@@ -15,6 +15,7 @@ class _LoginCardState extends State<LoginCard> {
 
   bool _isStaffLogin = false;
   bool _enabled = true;
+  bool _isPasswordVisible = false;
 
   final infoIncompleteSnackBar = SnackBar(
     content: ListTile(
@@ -134,8 +135,9 @@ class _LoginCardState extends State<LoginCard> {
                             controller: usernameController,
                             obscureText: false,
                             decoration: InputDecoration(
-                                prefixIcon: Icon(Icons.account_circle),
-                                hintText: '帳號'),
+                              prefixIcon: Icon(Icons.account_circle),
+                              hintText: '帳號',
+                            ),
                           ),
                         ),
                         Padding(
@@ -144,9 +146,17 @@ class _LoginCardState extends State<LoginCard> {
                             enabled: _enabled,
                             keyboardType: TextInputType.text,
                             controller: passwordController,
-                            obscureText: true,
+                            obscureText: !_isPasswordVisible,
                             decoration: InputDecoration(
-                                prefixIcon: Icon(Icons.https), hintText: '密碼'),
+                              prefixIcon: Icon(Icons.https),
+                              suffixIcon: IconButton(
+                                icon: _isPasswordVisible ? Icon(Icons.visibility) : Icon(Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() => _isPasswordVisible = !_isPasswordVisible);
+                                },
+                              ),
+                              hintText: '密碼',
+                            ),
                           ),
                         ),
                         Padding(
@@ -171,8 +181,9 @@ class _LoginCardState extends State<LoginCard> {
                             controller: serialNumberController,
                             obscureText: false,
                             decoration: InputDecoration(
-                                prefixIcon: Icon(Icons.apps_sharp),
-                                hintText: '流水號'),
+                              prefixIcon: Icon(Icons.apps_sharp),
+                              hintText: '流水號',
+                            ),
                           ),
                         ),
                         Padding(
