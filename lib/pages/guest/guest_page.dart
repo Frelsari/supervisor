@@ -73,7 +73,8 @@ class _GuestState extends State<Guest> {
             }
             switch (snapshot.connectionState) {
               case ConnectionState.active:
-                return Padding(
+                _data['judge'] = _data['judge'] == 'unused' ? '裝置未使用' : _data['judge'];
+                return Container(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -185,14 +186,16 @@ class _GuestState extends State<Guest> {
                         children: [
                           SizedBox(width: 40.0),
                           Text(
-                            '工作記錄',
+                            '工作紀錄',
                             style: TextStyle(
                                 fontSize: 24.0, fontWeight: FontWeight.bold),
                           ),
                           SizedBox(width: 20.0),
-                          Text(
-                            _data['time'],
-                            style: TextStyle(fontSize: 20.0),
+                          Flexible(
+                            child: Text(
+                              _data['time'],
+                              style: TextStyle(fontSize: 20.0),
+                            ),
                           ),
                         ],
                       ),
