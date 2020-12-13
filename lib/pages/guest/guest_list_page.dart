@@ -234,6 +234,8 @@ class GuestList extends StatelessWidget {
                 Text(
                     '床室號：${guest['expire'] == -1 ? '尚未開始使用' : guest['position']}'),
                 SizedBox(height: 12.0),
+                Text('裝置號：${guest['machine']}'),
+                SizedBox(height: 12.0),
                 Text(
                     '過期時間：${guest['expire'] == -1 ? '--' : formatTimeLeftToMessage(timeLeft)}'),
               ],
