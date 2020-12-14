@@ -1,4 +1,5 @@
 import 'package:firevisor/custom_widgets/message_screen.dart';
+import 'package:firevisor/custom_widgets/status_card.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -69,11 +70,10 @@ class _GuestState extends State<Guest> {
               _data['modedescription'] = snapshot.data['modedescription'];
               _data['power'] = snapshot.data['power'];
               _data['time'] = snapshot.data['time'];
-              print(_data);
+              print('@guest_page.dart -> _data = $_data');
             }
             switch (snapshot.connectionState) {
               case ConnectionState.active:
-                _data['judge'] = _data['judge'] == 'unused' ? '裝置未使用' : _data['judge'];
                 return Container(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -82,33 +82,39 @@ class _GuestState extends State<Guest> {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8.0),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                          color: _data['change'] == '0'
-                              ? Colors.green
-                              : Colors.red,
-                          elevation: 5.0,
-                          child: ListTile(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 20.0, vertical: 12.0),
-                            leading: Icon(
-                              _data['change'] == '0'
-                                  ? Icons.check_circle_outline
-                                  : Icons.error_outline,
-                              color: Colors.white,
-                              size: 44.0,
-                            ),
-                            title: Text(
-                              _data['change'] == '0' ? '正常' : '待更換',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 24.0,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                        child: Builder(
+                          builder: (context) {
+                            if (_data['judge'] == 'unused') {
+                              return StatusCard(
+                                statusText: '裝置未使用',
+                                infoColor: Colors.grey[800],
+                                backgroundColor: Colors.yellow[700],
+                                iconData: Icons.app_blocking,
+                              );
+                            }
+                            if (_data['change'] == '0') {
+                              return StatusCard(
+                                statusText: '裝置正常',
+                                infoColor: Colors.grey[800],
+                                backgroundColor: Colors.green[400],
+                                iconData: Icons.check_circle_outline,
+                              );
+                            }
+                            if (_data['change'] == '1') {
+                              return StatusCard(
+                                statusText: '裝置待更換',
+                                infoColor: Colors.grey[800],
+                                backgroundColor: Colors.red[400],
+                                iconData: Icons.error_outline,
+                              );
+                            }
+                            return StatusCard(
+                              statusText: '資料錯誤',
+                              infoColor: Colors.white,
+                              backgroundColor: Colors.deepPurple,
+                              iconData: Icons.clear,
+                            );
+                          },
                         ),
                       ),
                       Padding(
