@@ -135,7 +135,7 @@ class _GuestState extends State<Guest> {
                           ),
                           SizedBox(width: 20.0),
                           Text(
-                            _data['expire'] == -1 ? '尚未開始使用' : _data['judge'],
+                            _data['judge'],
                             style: TextStyle(fontSize: 20.0),
                           ),
                         ],
