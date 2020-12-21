@@ -1,7 +1,7 @@
-import 'package:firevisor/pages/supervisor.dart';
+import 'package:firevisor/pages/user_pages/supervisor.dart';
 import 'package:flutter/material.dart';
 import 'package:firevisor/blocs/authenticate_bloc/authenticate_bloc.dart';
-import 'package:firevisor/pages/admin/administrator_page.dart';
+import 'package:firevisor/pages/user_pages/administrator_page.dart';
 import 'package:firevisor/pages/login_page.dart';
 import 'package:firevisor/pages/user_page.dart';
 import 'package:firevisor/user_repository.dart';

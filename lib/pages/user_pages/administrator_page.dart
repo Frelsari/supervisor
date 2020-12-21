@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:firevisor/blocs/staff_bloc/staff_bloc.dart';
-import 'package:firevisor/pages/staff/staff_list_page.dart';
-import '../guest/guest_list_page.dart';
+import 'package:firevisor/pages/user_lists/staff_list_page.dart';
+import '../user_lists/guest_list_page.dart';
 
 class Administrator extends StatefulWidget {
   static const sName = "/administrator_page";

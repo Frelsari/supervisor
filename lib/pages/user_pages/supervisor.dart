@@ -1,5 +1,5 @@
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
-import 'package:firevisor/pages/guest/guest_list_page.dart';
+import 'package:firevisor/pages/user_lists/guest_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
