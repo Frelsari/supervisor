@@ -9,13 +9,13 @@ class LoginCard extends StatefulWidget {
 }
 
 class _LoginCardState extends State<LoginCard> {
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
-  final serialNumberController = TextEditingController();
+  final usernameController = TextEditingController(); // 醫護人員/最高權限之使用者名稱
+  final passwordController = TextEditingController(); // 醫護人員/最高權限之密碼
+  final serialNumberController = TextEditingController(); // 家屬帳號流水號
 
-  bool _isStaffLogin = false;
-  bool _enabled = true;
-  bool _isPasswordVisible = false;
+  bool _isStaffLogin = false; // 是否切換成醫護人員/最高權限登入
+  bool _enabled = true; // 畫面是否能操控
+  bool _isPasswordVisible = false; // 是否顯示密碼，passwordController 中使用
 
   final infoIncompleteSnackBar = SnackBar(
     content: ListTile(
@@ -26,31 +26,41 @@ class _LoginCardState extends State<LoginCard> {
     duration: Duration(seconds: 1, milliseconds: 500),
   );
 
+  // 醫護人員/最高權限登入時執行
   void staffLogin() {
-    final String _username = usernameController.text.trim();
-    final String _password = passwordController.text;
+    final String _username = usernameController.text.trim(); // 取得 username TextField 內容
+    final String _password = passwordController.text; // 取得 password TextField 內容
+
+    // 若使用者未輸入完整則跳出訊息，並跳出函式
     if (_username.isEmpty || _password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(infoIncompleteSnackBar);
       return;
     }
 
+    // 增加登入中事件，BlocConsumer 會接到 AuthenticateLoggingInState 的通知
     BlocProvider.of<AuthenticateBloc>(context)
         .add(AuthenticateLoggingInEvent());
+    // 增加登入事件，會透過 AuthenticateBloc 送到 UserRepository 登入 Firebase 並回傳登入結果
     BlocProvider.of<AuthenticateBloc>(context).add(AuthenticateLogInEvent(
       username: _username,
       password: _password,
     ));
   }
 
+  // 家屬流水號登入時執行
   void guestLogin() {
-    final _serialNumber = serialNumberController.text.trim();
+    final _serialNumber = serialNumberController.text.trim(); // 取得流水號 TextField 內容
+
+    // 若使用者未輸入完整則跳出訊息，並跳出函式
     if (_serialNumber.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(infoIncompleteSnackBar);
       return;
     }
 
+    // 增加登入中事件，BlocConsumer 會接到 AuthenticateLoggingInState 的通知
     BlocProvider.of<AuthenticateBloc>(context)
         .add(AuthenticateLoggingInEvent());
+    // 增加登入事件，會透過 AuthenticateBloc 送到 UserRepository 登入 Firebase 並回傳登入結果
     BlocProvider.of<AuthenticateBloc>(context).add(SerialNumberLogInEvent(
       serialNumber: _serialNumber,
     ));
@@ -66,12 +76,14 @@ class _LoginCardState extends State<LoginCard> {
       child: BlocConsumer<AuthenticateBloc, AuthenticateState>(
         listener: (context, state) {
           if (state is AuthenticateLoggedInState) {
+            // 登入成功則切換畫面至 User
             Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (context) => User(),
             ));
           } else {
             SnackBar snackBar;
             if (state is AuthenticateLoggingInState) {
+              // 等待 Firebase 登入結果時跳出
               snackBar = SnackBar(
                 content: ListTile(
                   leading: Icon(Icons.whatshot),
@@ -81,6 +93,7 @@ class _LoginCardState extends State<LoginCard> {
                 duration: Duration(seconds: 1, milliseconds: 500),
               );
             } else if (state is AuthenticateLogInFailedState) {
+              // 登入失敗時跳出
               snackBar = SnackBar(
                 content: ListTile(
                   leading: Icon(Icons.info),
@@ -90,10 +103,12 @@ class _LoginCardState extends State<LoginCard> {
                 duration: Duration(seconds: 1, milliseconds: 500),
               );
             }
+            // 顯示 snackbar
             ScaffoldMessenger.of(context).showSnackBar(snackBar);
           }
         },
         builder: (context, state) {
+          // 登入中或者登入成功則 disable LoginCard
           _enabled = !(state is AuthenticateLoggingInState ||
               state is AuthenticateLoggedInState);
           return Column(
@@ -105,24 +120,21 @@ class _LoginCardState extends State<LoginCard> {
                 leading: (_isStaffLogin
                     ? Icon(Icons.assignment_ind)
                     : Icon(Icons.airline_seat_flat)),
-                title: (_isStaffLogin ? Text('醫護人員登入') : Text('家屬登入')),
+                title: Text(_isStaffLogin ? '醫護人員登入' : '家屬登入'),
                 trailing: Switch(
                   value: _isStaffLogin,
                   onChanged: (value) {
-                    setState(() {
-                      _isStaffLogin = value;
-                    });
+                    setState(() => _isStaffLogin = value);
                   },
                 ),
                 onTap: () {
-                  setState(() {
-                    _isStaffLogin = !_isStaffLogin;
-                  });
+                  setState(() => _isStaffLogin = !_isStaffLogin);
                 },
               ),
               Builder(
                 builder: (context) {
                   if (_isStaffLogin) {
+                    // 醫護人員/最高權限登入
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -169,6 +181,7 @@ class _LoginCardState extends State<LoginCard> {
                       ],
                     );
                   } else {
+                    // 家屬流水號登入
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -221,6 +234,7 @@ class Login extends StatelessWidget {
       backgroundColor: Colors.lightBlue[100],
       body: SafeArea(
         child: SingleChildScrollView(
+          // SingleChildScrollView: widget overflow 時可以滾動畫面
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -249,7 +263,7 @@ class Login extends StatelessWidget {
               SizedBox(height: 8.0),
               Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: LoginCard(),
+                child: LoginCard(), // 輸入帳號資料/流水號的 Card
               ),
               SizedBox(height: 20.0),
               Text(
