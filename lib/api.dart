@@ -6,6 +6,7 @@ const userPath = rootDomain + '/user';
 const staffPath = rootDomain + '/staff';
 const guestPath = rootDomain + '/guest';
 
+// get particular staff data
 Future<Map<String, String>> getStaffData(String jwtToken) async {
   final http.Response response =
       await http.get(userPath + '?jwtToken=' + jwtToken);
@@ -25,6 +26,7 @@ Future<Map<String, String>> getStaffData(String jwtToken) async {
   }
 }
 
+// get data of all staff
 Future<List<Map<String, String>>> getStaffList(String jwtToken) async {
   List<Map<String, String>> staffList;
   String _message = 'Achieved StaffList successfully from firebase.';
@@ -55,6 +57,7 @@ Future<List<Map<String, String>>> getStaffList(String jwtToken) async {
   return staffList;
 }
 
+// create a staff account
 Future<List<Map<String, String>>> createStaff(
     Map<String, String> requestData) async {
   String _message = '';
@@ -92,6 +95,7 @@ Future<List<Map<String, String>>> createStaff(
   return staffList;
 }
 
+// delete a staff account
 Future<List<Map<String, String>>> deleteStaff(
     {String jwtToken, String uid}) async {
   String _message = '';
@@ -102,15 +106,18 @@ Future<List<Map<String, String>>> deleteStaff(
 
   switch (response.statusCode) {
     case 200:
+      // delete staff success
       final Map responseData = json.decode(response.body);
       _message = responseData['message'];
       break;
     case 401:
+      // jwtToken invalid or expired/permission denied
       final Map responseData = json.decode(response.body);
       print(responseData['result']);
       _message = responseData['messages']['message'];
       break;
     case 500:
+      // error occurred when creating account
       _message = response.body;
       break;
     default:
@@ -121,14 +128,18 @@ Future<List<Map<String, String>>> deleteStaff(
   return staffList;
 }
 
+// get particular guest data
 Future<Map<String, String>> getGuestData(String serialNumber) async {
   final http.Response response =
   await http.get(userPath + '?serialNumber=' + serialNumber);
 
   switch (response.statusCode) {
     case 200:
+      // get guest success
       final Map data = json.decode(response.body);
       print(data);
+
+      // combine data from different databases to map
       final Map<String, String> userData = {
         'statusCode': '200',
         'machine': data['machine'],
@@ -146,12 +157,14 @@ Future<Map<String, String>> getGuestData(String serialNumber) async {
       };
       return userData;
     case 404:
+      // serialNumber does not exist
       final Map<String, String> loginResult = {
         'statusCode': '404',
         'message': '流水號不存在，請使用其他流水號登入',
       };
       return loginResult;
     case 410:
+      // serialNumber expired
       final Map<String, String> loginResult = {
         'statusCode': '410',
         'message': '流水號已過期，請重新產生流水號或使用其他流水號登入',
@@ -166,6 +179,7 @@ Future<Map<String, String>> getGuestData(String serialNumber) async {
   }
 }
 
+// get all guest data
 Future<List<Map>> getGuestList(String jwtToken) async {
   List<Map> guestList;
   String _message = 'Achieved GuestList successfully from firebase.';
@@ -197,6 +211,7 @@ Future<List<Map>> getGuestList(String jwtToken) async {
   return guestList;
 }
 
+// regenerate serialNumber and expire time of a guest account
 Future<List<Map>> regenerateGuestSerialNumber(Map requestData) async {
   String _message = '';
   final String body = json.encode(requestData);
@@ -234,6 +249,7 @@ Future<List<Map>> regenerateGuestSerialNumber(Map requestData) async {
   return guestList;
 }
 
+// delete a guest account
 Future<List<Map>> deleteGuest({String jwtToken, String machine}) async {
   String _message = '';
   final http.Response response = await http.delete(
