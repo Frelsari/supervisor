@@ -152,11 +152,13 @@ class _GuestState extends State<Guest> {
                           Text(
                             '模    式',
                             style: TextStyle(
-                                fontSize: 24.0, fontWeight: FontWeight.bold),
+                              fontSize: 24.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           SizedBox(width: 20.0),
                           Text(
-                            _data['modedescription'],
+                            _data['modedescription'] + '模式',
                             style: TextStyle(fontSize: 20.0),
                           ),
                         ],
@@ -173,12 +175,19 @@ class _GuestState extends State<Guest> {
                           Text(
                             '電    量',
                             style: TextStyle(
-                                fontSize: 24.0, fontWeight: FontWeight.bold),
+                              fontSize: 24.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           SizedBox(width: 20.0),
                           CircleAvatar(
                             backgroundColor: getPowerColor(_data['power']),
                             child: Text(_data['power']),
+                          ),
+                          SizedBox(width: 12.0),
+                          Text(
+                            _data['power'],
+                            style: TextStyle(fontSize: 20.0),
                           ),
                         ],
                       ),
