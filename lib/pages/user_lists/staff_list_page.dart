@@ -5,6 +5,7 @@ import 'package:firevisor/blocs/staff_bloc/staff_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class StaffList extends StatelessWidget {
+  // add a staff account
   Future<void> _showAddStaffDialog(BuildContext context) async {
     final usernameController = TextEditingController();
     final passwordController = TextEditingController();
@@ -66,6 +67,7 @@ class StaffList extends StatelessWidget {
           ),
           onPressed: () {
             BlocProvider.of<StaffBloc>(context).add(LoadingStaffEvent());
+            // add staff via StaffBloc
             BlocProvider.of<StaffBloc>(context).add(AddStaffEvent(
               email: usernameController.text,
               password: passwordController.text,
@@ -107,6 +109,7 @@ class StaffList extends StatelessWidget {
               ),
               onPressed: () {
                 BlocProvider.of<StaffBloc>(context).add(LoadingStaffEvent());
+                // delete staff via StaffBloc
                 BlocProvider.of<StaffBloc>(context)
                     .add(DeleteStaffEvent(deleteUid: staff['uid']));
                 Navigator.pop(context);
@@ -129,6 +132,7 @@ class StaffList extends StatelessWidget {
               itemCount: state.staffList.length + 1,
               itemBuilder: (context, index) {
                 if (index == state.staffList.length) {
+                  // add staff ListTile
                   return ListTile(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -144,6 +148,7 @@ class StaffList extends StatelessWidget {
                     onTap: () => _showAddStaffDialog(context),
                   );
                 } else {
+                  // staff ListTile
                   final Map staff = state.staffList[index];
                   return ListTile(
                     shape: RoundedRectangleBorder(
