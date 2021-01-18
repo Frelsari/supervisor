@@ -1,3 +1,4 @@
+import 'package:firevisor/pages/test_page.dart';
 import 'package:firevisor/pages/user_pages/supervisor.dart';
 import 'package:flutter/material.dart';
 import 'package:firevisor/blocs/authenticate_bloc/authenticate_bloc.dart';
@@ -33,12 +34,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: Login.sName,
+      initialRoute: TimeCurvePage.sName,
       routes: {
         Login.sName: (context) => Login(),
         User.sName: (context) => User(),
         Administrator.sName: (context) => Administrator(),
         Supervisor.sName: (context) => Supervisor(),
+        TimeCurvePage.sName: (context) => TimeCurvePage(),
       },
       builder: (context, child) {
         final MediaQueryData data = MediaQuery.of(context);

@@ -23,6 +23,7 @@ dependencies:
   flutter_bloc: ^6.1.1
   equatable: ^1.2.5
   flutter_spinkit: ^4.1.2+1
+  timeline_tile: ^1.0.0
 
 dev_dependencies:
   flutter_test:
