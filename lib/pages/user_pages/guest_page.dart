@@ -8,6 +8,7 @@ class Guest extends StatefulWidget {
   @override
   _GuestState createState() => _GuestState();
 
+  // get machine initial data when constructor is called
   final Map data;
 
   Guest(Map<String, String> machineData) : data = machineData;
@@ -15,9 +16,10 @@ class Guest extends StatefulWidget {
 
 class _GuestState extends State<Guest> {
   FirebaseFirestore _firestore;
-  Map _data;
-  Stream dataStream;
+  Map _data; // machine data
+  Stream _dataStream; // listen machine data change from api
 
+  // show color according to power
   Color getPowerColor(String s) {
     int power = int.parse(s);
     if (power > 50 && power < 101) {
@@ -34,9 +36,12 @@ class _GuestState extends State<Guest> {
   @override
   void initState() {
     super.initState();
+    // get data from constructor
     _data = widget.data;
+
+    // get datastream from firebase
     _firestore = FirebaseFirestore.instance;
-    dataStream =
+    _dataStream =
         _firestore.collection('NTUTLab321').doc(_data['machine']).snapshots();
   }
 
@@ -48,7 +53,7 @@ class _GuestState extends State<Guest> {
         centerTitle: true,
       ),
       body: StreamBuilder(
-        stream: dataStream,
+        stream: _dataStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             print(
@@ -62,6 +67,7 @@ class _GuestState extends State<Guest> {
               ),
             );
           } else {
+            // update data if snapshot has data
             if (snapshot.hasData) {
               print('@guest_page.dart -> snapshot.data = ${snapshot.data}');
               _data['judge'] = snapshot.data['judge'];
@@ -84,6 +90,7 @@ class _GuestState extends State<Guest> {
                         padding: const EdgeInsets.all(8.0),
                         child: Builder(
                           builder: (context) {
+                            // machine that doesn't have a serial number after init
                             if (_data['judge'] == 'unused') {
                               return StatusCard(
                                 statusText: '裝置未使用',
@@ -92,6 +99,7 @@ class _GuestState extends State<Guest> {
                                 iconData: Icons.app_blocking,
                               );
                             }
+                            // device normal
                             if (_data['change'] == '0') {
                               return StatusCard(
                                 statusText: '裝置正常',
@@ -100,6 +108,7 @@ class _GuestState extends State<Guest> {
                                 iconData: Icons.check_circle_outline,
                               );
                             }
+                            // device should be changed
                             if (_data['change'] == '1') {
                               return StatusCard(
                                 statusText: '裝置待更換',
@@ -108,6 +117,7 @@ class _GuestState extends State<Guest> {
                                 iconData: Icons.error_outline,
                               );
                             }
+                            // data has error
                             return StatusCard(
                               statusText: '資料錯誤',
                               infoColor: Colors.white,
@@ -152,11 +162,13 @@ class _GuestState extends State<Guest> {
                           Text(
                             '模    式',
                             style: TextStyle(
-                                fontSize: 24.0, fontWeight: FontWeight.bold),
+                              fontSize: 24.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           SizedBox(width: 20.0),
                           Text(
-                            _data['modedescription'],
+                            _data['modedescription'] + '模式',
                             style: TextStyle(fontSize: 20.0),
                           ),
                         ],
@@ -173,12 +185,19 @@ class _GuestState extends State<Guest> {
                           Text(
                             '電    量',
                             style: TextStyle(
-                                fontSize: 24.0, fontWeight: FontWeight.bold),
+                              fontSize: 24.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           SizedBox(width: 20.0),
                           CircleAvatar(
                             backgroundColor: getPowerColor(_data['power']),
                             child: Text(_data['power']),
+                          ),
+                          SizedBox(width: 12.0),
+                          Text(
+                            _data['power'],
+                            style: TextStyle(fontSize: 20.0),
                           ),
                         ],
                       ),

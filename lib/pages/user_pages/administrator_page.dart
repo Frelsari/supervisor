@@ -13,9 +13,12 @@ class Administrator extends StatefulWidget {
 }
 
 class _AdministratorState extends State<Administrator> {
-  int _selectedIndex = 0;
-  bool _isLoading = false;
+  // variables for bottom navigation
   final List<Widget> _widgetOptions = [StaffList(), GuestList(true)];
+  int _selectedIndex = 0;
+
+  // disable some widgets when loading is true
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -23,14 +26,19 @@ class _AdministratorState extends State<Administrator> {
     _refreshList();
   }
 
+  // switch bottom navigation
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
   }
 
   Future<void> _refreshList() async {
+    // push loading event for ui state change
     BlocProvider.of<StaffBloc>(context).add(LoadingStaffEvent());
     BlocProvider.of<GuestBloc>(context).add(LoadingGuestEvent());
+
+    // get staff list from StaffBloc
     BlocProvider.of<StaffBloc>(context).add(GetStaffEvent());
+    // get guest list from GuestBloc
     BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
   }
 
@@ -42,11 +50,13 @@ class _AdministratorState extends State<Administrator> {
 
     return MultiBlocListener(
       listeners: [
+        // reset ui when new state occurs in StaffListPage
         BlocListener<StaffBloc, StaffState>(
           listener: (context, state) {
             setState(() {});
           },
         ),
+        // reset ui when new state occurs in StaffListPage
         BlocListener<GuestBloc, GuestState>(
           listener: (context, state) {
             setState(() {});
@@ -62,7 +72,7 @@ class _AdministratorState extends State<Administrator> {
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.refresh),
           backgroundColor: _isLoading ? Colors.grey : Colors.deepPurple,
-          onPressed: _isLoading ? null : _refreshList,
+          onPressed: _isLoading ? null : _refreshList, // disable button when loading data
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: [

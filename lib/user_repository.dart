@@ -1,24 +1,29 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firevisor/api.dart';
 
+// admin/staff logins to firebase via UserRepository
 class UserRepository {
   final FirebaseAuth _auth;
-  final String _address = "@vghtpe.tw";
-  String _jwtToken;
+  final String _address = "@vghtpe.tw"; // fake domain to fit email
+  String _jwtToken; // token for fetching api from api.dart
 
+  // constructor signs out as default status
   UserRepository({
     FirebaseAuth firebaseAuth,
   }) : _auth = (firebaseAuth ?? FirebaseAuth.instance)..signOut();
 
+  // login to firebase, returns loginResult
   Future<Map<String, String>> logInWithUsernameAndPassword({
     String username,
     String password,
   }) async {
     try {
+      // login to firebase with email and password
       await _auth.signInWithEmailAndPassword(
         email: username + _address,
         password: password,
       );
+      // save jwt token to user repository and get data of user
       _jwtToken = await _auth.currentUser.getIdToken();
       final Map userData = await getStaffData(_jwtToken);
       return userData;
@@ -46,4 +51,5 @@ class UserRepository {
   }
 }
 
+// init UserRepository instance
 final UserRepository userRepository = UserRepository();

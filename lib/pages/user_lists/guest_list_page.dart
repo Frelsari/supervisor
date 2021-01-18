@@ -7,7 +7,7 @@ import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class GuestListPage extends StatefulWidget {
-  final isAdmin;
+  final isAdmin; // represents if page is called by admin
 
   @override
   GuestListPage(bool admin) : isAdmin = admin;
@@ -17,16 +17,18 @@ class GuestListPage extends StatefulWidget {
 }
 
 class _GuestListPageState extends State<GuestListPage> {
-  Color _themeColor;
-  bool _isLoading = false;
+  Color _themeColor; // change color by different role
+  bool _isLoading = false; // disable some widgets when loading
 
   @override
   void initState() {
     super.initState();
+    // init theme color
     _themeColor = widget.isAdmin ? Colors.deepPurple : Colors.indigo;
     _refreshList();
   }
 
+  // get guest list from GuestBloc
   Future<void> _refreshList() async {
     BlocProvider.of<GuestBloc>(context).add(LoadingGuestEvent());
     BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
@@ -36,11 +38,10 @@ class _GuestListPageState extends State<GuestListPage> {
   Widget build(BuildContext context) {
     return BlocListener<GuestBloc, GuestState>(
       listener: (context, state) {
-        if (state is LoadingGuestState) {
-          setState(() => _isLoading = true);
-        } else {
-          setState(() => _isLoading = false);
-        }
+        // update _isLoading according to state
+        setState(() {
+          _isLoading = state is LoadingGuestState;
+        });
       },
       child: Scaffold(
         appBar: AppBar(
@@ -67,10 +68,15 @@ class GuestList extends StatelessWidget {
       : _isAdmin = isAdmin,
         _themeColor = isAdmin ? Colors.deepPurple : Colors.indigo;
 
+  // regenerate serial number and reset guest account expire time
   Future<void> _showRegenerateSerialNumberDialog(
       BuildContext context, Map guest) async {
+    // expire time length for new serial number
     int _days = 1;
+    // textfield controller for custom input expire time length
     final daysController = TextEditingController();
+
+    // show dialog if normal
     final regenerateSerialNumberDialog = AlertDialog(
       title: Text('設定流水號期限'),
       content: SingleChildScrollView(
@@ -140,7 +146,6 @@ class GuestList extends StatelessWidget {
                         decoration: InputDecoration(
                           labelText: '自訂 (天)',
                         ),
-
                       ),
                     ),
                   ],
@@ -166,6 +171,7 @@ class GuestList extends StatelessWidget {
           onPressed: () {
             BlocProvider.of<GuestBloc>(context).add(LoadingGuestEvent());
             if (_days != -1) {
+              // get days from options
               BlocProvider.of<GuestBloc>(context)
                   .add(RegenerateSerialNumberEvent(
                 machine: guest['machine'],
@@ -173,7 +179,9 @@ class GuestList extends StatelessWidget {
                 position: guest['position'],
               ));
             } else {
+              // get days from input text
               final String daysText = daysController.text.trim();
+              // add event if daysText only contains numbers
               if (daysText.contains(RegExp('^[0-9]*\$'))) {
                 BlocProvider.of<GuestBloc>(context)
                     .add(RegenerateSerialNumberEvent(
@@ -190,6 +198,8 @@ class GuestList extends StatelessWidget {
         )
       ],
     );
+
+    // show dialog if account not authorized
     final regenerateBannedDialog = AlertDialog(
       title: Text('產生流水號'),
       content: Text('請稍後再產生新的流水號！'),
@@ -210,14 +220,17 @@ class GuestList extends StatelessWidget {
     return showDialog<void>(
       context: context,
       builder: (context) {
-        if ((!_isAdmin) && regenerateTime.compareTo(DateTime.now()) > 0)
+        // ban user from regenerating if user is not admin && time passed regenerateTime
+        if ((!_isAdmin) && regenerateTime.compareTo(DateTime.now()) > 0) {
           return regenerateBannedDialog;
-        else
+        } else {
           return regenerateSerialNumberDialog;
+        }
       },
     );
   }
 
+  // show guest and machine information
   Future<void> _showGuestInfoDialog(BuildContext context, Map guest) async {
     return showDialog(
       context: context,
@@ -226,7 +239,9 @@ class GuestList extends StatelessWidget {
             new DateTime.fromMillisecondsSinceEpoch(guest['expire']);
         final Duration timeLeft = expireTime.difference(new DateTime.now());
         return AlertDialog(
-          title: (guest['expire'] == -1 ? Text('未啟用帳號') : Text(guest['serialNumber'])),
+          title: (guest['expire'] == -1
+              ? Text('未啟用帳號')
+              : Text(guest['serialNumber'])),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,6 +272,7 @@ class GuestList extends StatelessWidget {
     );
   }
 
+  // delete guest account
   Future<void> _showDeleteGuestDialog(BuildContext context, Map guest) async {
     return showDialog(
       context: context,
@@ -332,7 +348,7 @@ class GuestList extends StatelessWidget {
                       ),
                     ),
                     PopupMenuItem(
-                      value: 'deletePermanently',
+                      value: 'deleteGuest',
                       child: Row(
                         children: [
                           Icon(Icons.delete_forever),
@@ -347,7 +363,7 @@ class GuestList extends StatelessWidget {
                       case 'regenerateSerialNumber':
                         _showRegenerateSerialNumberDialog(context, guest);
                         break;
-                      case 'deletePermanently':
+                      case 'deleteGuest':
                         _showDeleteGuestDialog(context, guest);
                         break;
                       default:
@@ -366,10 +382,12 @@ class GuestList extends StatelessWidget {
                       child: Icon(Icons.fiber_new),
                     ),
                     title: Text(
-                      guest['position'] == 'unused' ? '未啟用帳號' : guest['position'],
+                      guest['position'] == 'unused'
+                          ? '未啟用帳號'
+                          : guest['position'],
                       style: TextStyle(
-                        // color: Colors.grey,
-                      ),
+                          // color: Colors.grey,
+                          ),
                     ),
                     subtitle: Text('產生流水號以啟用帳號'),
                     trailing: popupMenu,
