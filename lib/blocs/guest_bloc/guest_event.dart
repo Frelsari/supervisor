@@ -4,11 +4,13 @@ abstract class GuestEvent extends Equatable {
   const GuestEvent();
 }
 
+// loading event that yields state for ui change
 class LoadingGuestEvent extends GuestEvent {
   @override
   List<Object> get props => [];
 }
 
+// regenerate serial number for a particular guest
 class RegenerateSerialNumberEvent extends GuestEvent {
   final String machine;
   final String expireTime;
@@ -29,11 +31,13 @@ class RegenerateSerialNumberEvent extends GuestEvent {
       ];
 }
 
+// event get all guests
 class GetGuestEvent extends GuestEvent {
   @override
   List<Object> get props => [];
 }
 
+// event deletes particular guest and machine
 class DeleteGuestEvent extends GuestEvent {
   final String machine;
 

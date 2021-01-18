@@ -35,7 +35,7 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
       yield* _mapLoadingGuestEventToState();
     }
   }
-
+  
   Stream<GuestState> _mapRegenerateSerialNumberEventToState(
     String machine,
     String expireTime,

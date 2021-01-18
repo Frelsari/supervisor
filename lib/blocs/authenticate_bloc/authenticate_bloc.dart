@@ -49,6 +49,7 @@ class AuthenticateBloc extends Bloc<AuthenticateEvent, AuthenticateState> {
     if (isLoggedIn) {
       print('@authenticate_bloc.dart -> _mapAuthenticateLogInEventToState -> user already logged in');
     } else {
+      // login via user_repository.dart
       try {
         loginResult = await _userRepository.logInWithUsernameAndPassword(
           username: username,
@@ -89,6 +90,7 @@ class AuthenticateBloc extends Bloc<AuthenticateEvent, AuthenticateState> {
   Stream<AuthenticateState> _mapSerialNumberLogInEventToState(String serialNumber) async* {
     Map loginResult = await getGuestData(serialNumber);
 
+    // login via api.dart
     if (loginResult['statusCode'] == '200') {
       yield AuthenticateLoggedInState(loginResult: loginResult);
     } else {
