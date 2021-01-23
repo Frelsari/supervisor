@@ -43,34 +43,43 @@ class _SupervisorState extends State<Supervisor> {
     return showDialog<void>(
         context: context,
         builder: (context) {
+          List fakeData = ['07:24 已更換', '10:47 已更換', '12:13 已更換', '16:21 已更換', '17:33 已更換'];
+          var now = DateTime.now();
+          
           return AlertDialog(
-              title: Text('歷史紀錄'),
+              title: Text('歷史紀錄 ${now.month}/${now.day}'),
               content: Container(
                 height: 300.0,
                 width: 300.0,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.indigo),
+                  borderRadius: BorderRadius.circular(5.0),
                 ),
                 child: ListView.builder(
-                  itemCount: 5,
+                  itemCount: fakeData.length,
                   itemBuilder: (context, index) {
                     return TimelineTile(
                       alignment: TimelineAlign.manual,
                       lineXY: 0.2,
                       indicatorStyle: IndicatorStyle(
-                        width: 40,
-                        color: Colors.green,
-                        iconStyle: IconStyle(
-                          color: Colors.white,
-                          iconData: Icons.check,
+                        color: Colors.indigo,
+                        width: 40.0,
+                        height: 40.0,
+                        indicator: CircleAvatar(
+                          backgroundColor: Colors.indigo,
+                          radius: 100.0,
+                          child: Text(
+                            '${index + 1}',
+                            style: TextStyle(color: Colors.white, fontSize: 24.0),
+                          ),
                         ),
                       ),
-                      afterLineStyle: LineStyle(color: Colors.green),
-                      beforeLineStyle: LineStyle(color: Colors.green),
+                      afterLineStyle: LineStyle(color: Colors.indigo),
+                      beforeLineStyle: LineStyle(color: Colors.indigo),
                       endChild: Container(
                         margin: EdgeInsets.all(12.0),
                         child: Text(
-                          'Index $index',
+                          fakeData[index],
                           style: TextStyle(
                             fontSize: 18.0,
                           ),
