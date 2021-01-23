@@ -1,18 +1,16 @@
+import 'package:flutter/material.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:firevisor/pages/user_lists/guest_list_page.dart';
-import 'package:flutter/material.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import 'package:flutter/services.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 import 'package:wakelock/wakelock.dart';
 
-// remove this and use instance from user_repository
-final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-enum lists { number, state, battery }
+// 機器排序方法：編號、狀態、電量
+enum ListOrder { title, change, power }
 
 class Supervisor extends StatefulWidget {
   static const sName = "/supervisor";
@@ -22,80 +20,10 @@ class Supervisor extends StatefulWidget {
 }
 
 class _SupervisorState extends State<Supervisor> {
+  final firestore = FirebaseFirestore.instance;
   var subscription;
+  ListOrder orderOption;
   bool ring = true;
-
-  lists choose = lists.number;
-  int powered;
-  String alarm;
-
-  Stream<QuerySnapshot> _stream(var change) {
-    switch (change) {
-      case lists.state:
-        return firestore
-            .collection('NTUTLab321')
-            .orderBy('change', descending: true)
-            .snapshots();
-      case lists.battery:
-        return firestore
-            .collection('NTUTLab321')
-            .orderBy('power', descending: false)
-            .snapshots();
-      default:
-        return firestore
-            .collection('NTUTLab321')
-            .orderBy('title', descending: false)
-            .snapshots();
-    }
-  }
-
-  Color getColor1(String selector) {
-    switch (selector) {
-      case '0':
-        return Colors.greenAccent;
-      case '1':
-        judge(ring);
-        return Colors.redAccent;
-      default:
-        return Colors.black12;
-    }
-  }
-
-  Color getColor2(String power) {
-    powered = int.parse(power);
-    if (powered > 50 && powered < 101) {
-      return Colors.green;
-    } else if (powered > 25 && powered < 51) {
-      return Colors.yellow;
-    } else if (powered > 0 && powered < 26) {
-      selector(alarm);
-      return Colors.red;
-    } else {
-      return Colors.black12;
-    }
-  }
-
-  void selector(String alarm) {
-    if (alarm == '1') {
-      judge(ring);
-    }
-  }
-
-  remind(String txt) {
-    if (txt == '1') {
-      return 'check';
-    } else {
-      return '';
-    }
-  }
-
-  void judge(bool ring) {
-    if (ring == true) {
-      FlutterRingtonePlayer.playAlarm();
-    } else {
-      FlutterRingtonePlayer.stop();
-    }
-  }
 
   @override
   void initState() {
@@ -104,7 +32,70 @@ class _SupervisorState extends State<Supervisor> {
     subscription = Connectivity()
         .onConnectivityChanged
         .listen((result) => _showCheckInternetDialog());
-    Wakelock.enable(); //保持螢幕一直開啟
+    // 保持螢幕一直開啟
+    Wakelock.enable();
+    orderOption = ListOrder.title;
+  }
+
+  Stream<QuerySnapshot> _stream(ListOrder order) {
+    print('current order = ${order.toString()}');
+    var collection = firestore.collection('NTUTLab321');
+    switch (order) {
+      case ListOrder.change:
+        return collection
+            .orderBy('change', descending: true)
+            .snapshots();
+      case ListOrder.power:
+        return collection
+            .orderBy('power', descending: false)
+            .snapshots();
+      default:
+        return collection
+            .orderBy('title', descending: false)
+            .snapshots();
+    }
+  }
+
+  Color getChangeColor(String change) {
+    switch (change) {
+      case '0':
+        return Colors.greenAccent;
+      case '1':
+        triggerAlarm(ring);
+        return Colors.redAccent;
+      default:
+        return Colors.black12;
+    }
+  }
+
+  Color getPowerColor(String power) {
+    int value = int.parse(power);
+    if (value > 50 && value < 101) {
+      return Colors.green;
+    } else if (value > 25 && value < 51) {
+      return Colors.yellow;
+    } else if (value > 0 && value < 26) {
+      return Colors.red;
+    } else {
+      return Colors.black12;
+    }
+  }
+
+  // 狀態 DataColumn 為紅色時，會有一個 check (目前已移除)
+  // String remind(String txt) {
+  //   if (txt == '1') {
+  //     return 'check';
+  //   } else {
+  //     return '';
+  //   }
+  // }
+
+  void triggerAlarm(bool ring) {
+    if (ring) {
+      FlutterRingtonePlayer.playAlarm();
+    } else {
+      FlutterRingtonePlayer.stop();
+    }
   }
 
   Future<void> _showTimeCurveDialog() async {
@@ -195,6 +186,7 @@ class _SupervisorState extends State<Supervisor> {
     }
   }
 
+  // waiting for refactor
   Future<bool> _onWillPop() {
     return showDialog(
       context: context,
@@ -221,6 +213,7 @@ class _SupervisorState extends State<Supervisor> {
     );
   }
 
+  // waiting for refactor
   Future<bool> _delete() {
     return showDialog(
       context: context,
@@ -256,7 +249,7 @@ class _SupervisorState extends State<Supervisor> {
   List<DataRow> _createRows(QuerySnapshot snapshot) {
     List<DataRow> dataRows = snapshot.docs.map(
       (documentSnapshot) {
-        selector(documentSnapshot['alarm']);
+        if (documentSnapshot['alarm'] == '1') triggerAlarm(ring);
         return DataRow(
           onSelectChanged: (context) => _showTimeCurveDialog(),
           cells: [
@@ -273,7 +266,7 @@ class _SupervisorState extends State<Supervisor> {
               Padding(
                 padding: EdgeInsets.all(4.0),
                 child: CircleAvatar(
-                  backgroundColor: getColor1(documentSnapshot['change']),
+                  backgroundColor: getChangeColor(documentSnapshot['change']),
                 ),
               ),
             ),
@@ -285,9 +278,7 @@ class _SupervisorState extends State<Supervisor> {
                     documentSnapshot['power'],
                     style: TextStyle(color: Colors.blueGrey, fontSize: 20.0),
                   ),
-                  backgroundColor: getColor2(
-                    documentSnapshot['power'],
-                  ),
+                  backgroundColor: getPowerColor(documentSnapshot['power']),
                 ),
               ),
             ),
@@ -367,10 +358,10 @@ class _SupervisorState extends State<Supervisor> {
                 PopupMenuItem(
                   child: RadioListTile(
                     title: Text('編號排序'),
-                    value: lists.number,
-                    groupValue: choose,
+                    value: ListOrder.title,
+                    groupValue: orderOption,
                     onChanged: (value) {
-                      setState(() => choose = value);
+                      setState(() => orderOption = value);
                       Navigator.pop(context);
                     },
                   ),
@@ -378,10 +369,10 @@ class _SupervisorState extends State<Supervisor> {
                 PopupMenuItem(
                   child: RadioListTile(
                     title: Text('狀態排序'),
-                    value: lists.state,
-                    groupValue: choose,
+                    value: ListOrder.change,
+                    groupValue: orderOption,
                     onChanged: (value) {
-                      setState(() => choose = value);
+                      setState(() => orderOption = value);
                       Navigator.pop(context);
                     },
                   ),
@@ -389,10 +380,10 @@ class _SupervisorState extends State<Supervisor> {
                 PopupMenuItem(
                   child: RadioListTile(
                     title: Text('電量排序'),
-                    value: lists.battery,
-                    groupValue: choose,
+                    value: ListOrder.power,
+                    groupValue: orderOption,
                     onChanged: (value) {
-                      setState(() => choose = value);
+                      setState(() => orderOption = value);
                       Navigator.pop(context);
                     },
                   ),
@@ -419,7 +410,7 @@ class _SupervisorState extends State<Supervisor> {
           child: Center(
             child: Container(
               child: StreamBuilder<QuerySnapshot>(
-                stream: _stream(choose), // 根據所需的項目排序，選擇stream
+                stream: _stream(orderOption), // 根據所需的項目排序，選擇stream
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasError) {
                     // 如果資料格式不符程式所需，印出錯誤
