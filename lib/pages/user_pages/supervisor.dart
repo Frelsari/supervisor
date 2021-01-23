@@ -12,6 +12,8 @@ import 'package:wakelock/wakelock.dart';
 // remove this and use instance from user_repository
 final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+enum lists { number, state, battery }
+
 class Supervisor extends StatefulWidget {
   static const sName = "/supervisor";
 
@@ -20,32 +22,105 @@ class Supervisor extends StatefulWidget {
 }
 
 class _SupervisorState extends State<Supervisor> {
+  var subscription;
+  bool ring = true;
+
+  lists choose = lists.number;
+  int powered;
+  String alarm;
+
+  Stream<QuerySnapshot> _stream(var change) {
+    switch (change) {
+      case lists.state:
+        return firestore
+            .collection('NTUTLab321')
+            .orderBy('change', descending: true)
+            .snapshots();
+      case lists.battery:
+        return firestore
+            .collection('NTUTLab321')
+            .orderBy('power', descending: false)
+            .snapshots();
+      default:
+        return firestore
+            .collection('NTUTLab321')
+            .orderBy('title', descending: false)
+            .snapshots();
+    }
+  }
+
+  Color getColor1(String selector) {
+    switch (selector) {
+      case '0':
+        return Colors.greenAccent;
+      case '1':
+        judge(ring);
+        return Colors.redAccent;
+      default:
+        return Colors.black12;
+    }
+  }
+
+  Color getColor2(String power) {
+    powered = int.parse(power);
+    if (powered > 50 && powered < 101) {
+      return Colors.green;
+    } else if (powered > 25 && powered < 51) {
+      return Colors.yellow;
+    } else if (powered > 0 && powered < 26) {
+      selector(alarm);
+      return Colors.red;
+    } else {
+      return Colors.black12;
+    }
+  }
+
+  void selector(String alarm) {
+    if (alarm == '1') {
+      judge(ring);
+    }
+  }
+
+  remind(String txt) {
+    if (txt == '1') {
+      return 'check';
+    } else {
+      return '';
+    }
+  }
+
+  void judge(bool ring) {
+    if (ring == true) {
+      FlutterRingtonePlayer.playAlarm();
+    } else {
+      FlutterRingtonePlayer.stop();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    // SystemChrome.setPreferredOrientations(
-    //   //強制app橫向顯示
-    //   [
-    //     DeviceOrientation.landscapeRight,
-    //     DeviceOrientation.landscapeLeft,
-    //   ],
-    // );
-    subscription = Connectivity().onConnectivityChanged.listen(
-      //檢查網路是否連接
-      (ConnectivityResult result) {
-        check();
-      },
-    );
+    // 檢查網路是否連接
+    subscription = Connectivity()
+        .onConnectivityChanged
+        .listen((result) => _showCheckInternetDialog());
     Wakelock.enable(); //保持螢幕一直開啟
   }
 
-  Future<void> showTimeCurveDialog() async {
+  Future<void> _showTimeCurveDialog() async {
     return showDialog<void>(
         context: context,
         builder: (context) {
-          List fakeData = ['07:24 已更換', '10:47 已更換', '12:13 已更換', '16:21 已更換', '17:33 已更換'];
+          // for timecurve testing
+          List fakeData = [
+            '07:24 已更換',
+            '10:47 已更換',
+            '12:13 已更換',
+            '16:21 已更換',
+            '17:33 已更換'
+          ];
           var now = DateTime.now();
-          
+
           return AlertDialog(
               title: Text('歷史紀錄 ${now.month}/${now.day}'),
               content: Container(
@@ -70,7 +145,10 @@ class _SupervisorState extends State<Supervisor> {
                           radius: 100.0,
                           child: Text(
                             '${index + 1}',
-                            style: TextStyle(color: Colors.white, fontSize: 24.0),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24.0,
+                            ),
                           ),
                         ),
                       ),
@@ -98,7 +176,7 @@ class _SupervisorState extends State<Supervisor> {
         });
   }
 
-  Future<void> check() async {
+  Future<void> _showCheckInternetDialog() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       return showDialog(
@@ -109,9 +187,7 @@ class _SupervisorState extends State<Supervisor> {
           actions: <Widget>[
             FlatButton(
               child: Text('確認'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
+              onPressed: () => Navigator.pop(context),
             ),
           ],
         ),
@@ -176,15 +252,13 @@ class _SupervisorState extends State<Supervisor> {
     );
   }
 
-  List<DataRow> createRows(QuerySnapshot snapshot) {
-    //顯示雲端資料
-    List<DataRow> list = snapshot.docs.map(
-      (DocumentSnapshot documentSnapshot) {
+  // 顯示雲端資料
+  List<DataRow> _createRows(QuerySnapshot snapshot) {
+    List<DataRow> dataRows = snapshot.docs.map(
+      (documentSnapshot) {
         selector(documentSnapshot['alarm']);
         return DataRow(
-          onSelectChanged: (context) {
-            showTimeCurveDialog();
-          },
+          onSelectChanged: (context) => _showTimeCurveDialog(),
           cells: [
             DataCell(
               Text(documentSnapshot['title']),
@@ -266,29 +340,25 @@ class _SupervisorState extends State<Supervisor> {
         );
       },
     ).toList();
-    return list;
+    return dataRows;
   }
 
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: _onWillPop, //退出app提醒
+      onWillPop: _onWillPop, // 退出app提醒
       child: Scaffold(
         appBar: AppBar(
           title: Text('NTUTLab321點滴、尿袋智慧監控系統'),
           actions: <Widget>[
             PopupMenuButton(
               itemBuilder: (context) => <PopupMenuEntry>[
-                //功能選單
+                // 功能選單
                 PopupMenuItem(
                   child: SwitchListTile(
                     title: Text('鈴聲開關'),
                     value: ring,
-                    onChanged: (bool value) {
-                      setState(
-                        () {
-                          ring = value;
-                        },
-                      );
+                    onChanged: (value) {
+                      setState(() => ring = value);
                       Navigator.pop(context);
                     },
                   ),
@@ -299,12 +369,8 @@ class _SupervisorState extends State<Supervisor> {
                     title: Text('編號排序'),
                     value: lists.number,
                     groupValue: choose,
-                    onChanged: (lists value) {
-                      setState(
-                        () {
-                          choose = value;
-                        },
-                      );
+                    onChanged: (value) {
+                      setState(() => choose = value);
                       Navigator.pop(context);
                     },
                   ),
@@ -314,12 +380,8 @@ class _SupervisorState extends State<Supervisor> {
                     title: Text('狀態排序'),
                     value: lists.state,
                     groupValue: choose,
-                    onChanged: (lists value) {
-                      setState(
-                        () {
-                          choose = value;
-                        },
-                      );
+                    onChanged: (value) {
+                      setState(() => choose = value);
                       Navigator.pop(context);
                     },
                   ),
@@ -329,12 +391,8 @@ class _SupervisorState extends State<Supervisor> {
                     title: Text('電量排序'),
                     value: lists.battery,
                     groupValue: choose,
-                    onChanged: (lists value) {
-                      setState(
-                        () {
-                          choose = value;
-                        },
-                      );
+                    onChanged: (value) {
+                      setState(() => choose = value);
                       Navigator.pop(context);
                     },
                   ),
@@ -345,6 +403,7 @@ class _SupervisorState extends State<Supervisor> {
                     leading: Icon(Icons.account_circle),
                     title: Text('帳戶管理'),
                     onTap: () {
+                      // 開啟 guest list page
                       BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) => GuestListPage(false),
@@ -360,16 +419,16 @@ class _SupervisorState extends State<Supervisor> {
           child: Center(
             child: Container(
               child: StreamBuilder<QuerySnapshot>(
-                stream: _stream(choose), //根據所需的項目排序，選擇stream
+                stream: _stream(choose), // 根據所需的項目排序，選擇stream
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasError) {
-                    //如果資料格式不符程式所需，印出錯誤
+                    // 如果資料格式不符程式所需，印出錯誤
                     return Text('Error: ${snapshot.error}');
                   }
                   switch (snapshot.connectionState) {
                     case ConnectionState.waiting: //連接雲端中
                       return Text('連接中...');
-                    default: //顯示雲端內的資料
+                    default: // 顯示雲端內的資料
                       return ListView(
                         children: <Widget>[
                           DataTable(
@@ -405,7 +464,7 @@ class _SupervisorState extends State<Supervisor> {
                                 label: Text('更換病人'),
                               )
                             ],
-                            rows: createRows(snapshot.data),
+                            rows: _createRows(snapshot.data),
                           ),
                         ],
                       );
@@ -424,81 +483,5 @@ class _SupervisorState extends State<Supervisor> {
         ),
       ),
     );
-  }
-}
-
-enum lists { number, state, battery }
-
-lists choose = lists.number;
-var subscription;
-int powered;
-bool ring = true;
-String alarm;
-
-Stream<QuerySnapshot> _stream(var change) {
-  switch (change) {
-    case lists.state:
-      return firestore
-          .collection('NTUTLab321')
-          .orderBy('change', descending: true)
-          .snapshots();
-    case lists.battery:
-      return firestore
-          .collection('NTUTLab321')
-          .orderBy('power', descending: false)
-          .snapshots();
-    default:
-      return firestore
-          .collection('NTUTLab321')
-          .orderBy('title', descending: false)
-          .snapshots();
-  }
-}
-
-Color getColor1(String selector) {
-  switch (selector) {
-    case '0':
-      return Colors.greenAccent;
-    case '1':
-      judge(ring);
-      return Colors.redAccent;
-    default:
-      return Colors.black12;
-  }
-}
-
-Color getColor2(String power) {
-  powered = int.parse(power);
-  if (powered > 50 && powered < 101) {
-    return Colors.green;
-  } else if (powered > 25 && powered < 51) {
-    return Colors.yellow;
-  } else if (powered > 0 && powered < 26) {
-    selector(alarm);
-    return Colors.red;
-  } else {
-    return Colors.black12;
-  }
-}
-
-void selector(String alarm) {
-  if (alarm == '1') {
-    judge(ring);
-  }
-}
-
-remind(String txt) {
-  if (txt == '1') {
-    return 'check';
-  } else {
-    return '';
-  }
-}
-
-void judge(bool ring) {
-  if (ring == true) {
-    FlutterRingtonePlayer.playAlarm();
-  } else {
-    FlutterRingtonePlayer.stop();
   }
 }
