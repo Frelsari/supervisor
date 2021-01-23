@@ -34,12 +34,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: TimeCurvePage.sName,
+      initialRoute: Login.sName,
       routes: {
         Login.sName: (context) => Login(),
         User.sName: (context) => User(),
-        Administrator.sName: (context) => Administrator(),
-        Supervisor.sName: (context) => Supervisor(),
         TimeCurvePage.sName: (context) => TimeCurvePage(),
       },
       builder: (context, child) {

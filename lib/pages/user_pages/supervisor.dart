@@ -6,8 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter/services.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:timeline_tile/timeline_tile.dart';
 import 'package:wakelock/wakelock.dart';
 
+// remove this and use instance from user_repository
 final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
 class Supervisor extends StatefulWidget {
@@ -21,13 +23,13 @@ class _SupervisorState extends State<Supervisor> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setPreferredOrientations(
-      //強制app橫向顯示
-      [
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-      ],
-    );
+    // SystemChrome.setPreferredOrientations(
+    //   //強制app橫向顯示
+    //   [
+    //     DeviceOrientation.landscapeRight,
+    //     DeviceOrientation.landscapeLeft,
+    //   ],
+    // );
     subscription = Connectivity().onConnectivityChanged.listen(
       //檢查網路是否連接
       (ConnectivityResult result) {
@@ -37,256 +39,54 @@ class _SupervisorState extends State<Supervisor> {
     Wakelock.enable(); //保持螢幕一直開啟
   }
 
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop, //退出app提醒
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('NTUTLab321點滴、尿袋智慧監控系統'),
-          actions: <Widget>[
-            PopupMenuButton(
-              itemBuilder: (context) => <PopupMenuEntry>[
-                //功能選單
-                PopupMenuItem(
-                  child: SwitchListTile(
-                    title: Text('鈴聲開關'),
-                    value: ring,
-                    onChanged: (bool value) {
-                      setState(
-                        () {
-                          ring = value;
-                        },
-                      );
-                      Navigator.pop(context);
-                    },
-                  ),
+  Future<void> showTimeCurveDialog() async {
+    return showDialog<void>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              title: Text('歷史紀錄'),
+              content: Container(
+                height: 300.0,
+                width: 300.0,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.indigo),
                 ),
-                PopupMenuDivider(height: 1.0),
-               PopupMenuItem(
-                 child: RadioListTile(
-                   title: Text('編號排序'),
-                   value: lists.number,
-                   groupValue: choose,
-                   onChanged: (lists value) {
-                     setState(
-                       () {
-                         choose = value;
-                       },
-                     );
-                     Navigator.pop(context);
-                   },
-                 ),
-               ),
-               PopupMenuItem(
-                 child: RadioListTile(
-                   title: Text('狀態排序'),
-                   value: lists.state,
-                   groupValue: choose,
-                   onChanged: (lists value) {
-                     setState(
-                       () {
-                         choose = value;
-                       },
-                     );
-                     Navigator.pop(context);
-                   },
-                 ),
-               ),
-               PopupMenuItem(
-                 child: RadioListTile(
-                   title: Text('電量排序'),
-                   value: lists.battery,
-                   groupValue: choose,
-                   onChanged: (lists value) {
-                     setState(
-                       () {
-                         choose = value;
-                       },
-                     );
-                     Navigator.pop(context);
-                   },
-                 ),
-               ),
-               PopupMenuDivider(height: 1.0),
-                PopupMenuItem(
-                  child: ListTile(
-                    leading: Icon(Icons.account_circle),
-                    title: Text('帳戶管理'),
-                    onTap: () {
-                      BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => GuestListPage(false),
-                      ));
-                    },
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-        body: SafeArea(
-          child: Center(
-            child: Container(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: _stream(choose), //根據所需的項目排序，選擇stream
-                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (snapshot.hasError) {
-                    //如果資料格式不符程式所需，印出錯誤
-                    return Text('Error: ${snapshot.error}');
-                  }
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.waiting: //連接雲端中
-                      return Text('連接中...');
-                    default: //顯示雲端內的資料
-                      return ListView(
-                        children: <Widget>[
-                          DataTable(
-                            columnSpacing: 1.0,
-                            columns: <DataColumn>[
-                              DataColumn(
-                                label: Text('設備編號'),
-                              ),
-                              DataColumn(
-                                label: Text('模式'),
-                              ),
-                              DataColumn(
-                                label: Text('狀態'),
-                              ),
-                              DataColumn(
-                                label: Text('電量'),
-                              ),
-                              /*DataColumn(
-                                label: Text('光譜圖'),
-                              ),*/
-                              DataColumn(
-                                label: Text('工作紀錄'),
-                              ),
-                              DataColumn(
-                                label: Text('更換病人'),
-                              )
-                            ],
-                            rows: createRows(snapshot.data),
+                child: ListView.builder(
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    return TimelineTile(
+                      alignment: TimelineAlign.manual,
+                      lineXY: 0.2,
+                      indicatorStyle: IndicatorStyle(
+                        width: 40,
+                        color: Colors.green,
+                        iconStyle: IconStyle(
+                          color: Colors.white,
+                          iconData: Icons.check,
+                        ),
+                      ),
+                      afterLineStyle: LineStyle(color: Colors.green),
+                      beforeLineStyle: LineStyle(color: Colors.green),
+                      endChild: Container(
+                        margin: EdgeInsets.all(12.0),
+                        child: Text(
+                          'Index $index',
+                          style: TextStyle(
+                            fontSize: 18.0,
                           ),
-                        ],
-                      );
-                  }
-                },
-              ),
-            ),
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          //暫時關閉警示鈴
-          child: Icon(Icons.alarm_off),
-          onPressed: () {
-            FlutterRingtonePlayer.stop();
-          },
-        ),
-      ),
-    );
-  }
-
-  List<DataRow> createRows(QuerySnapshot snapshot) {
-    //顯示雲端資料
-    List<DataRow> list = snapshot.docs.map(
-      (DocumentSnapshot documentSnapshot) {
-        selector(documentSnapshot['alarm']);
-        return DataRow(
-          cells: [
-            DataCell(
-              Text(
-                documentSnapshot['title'],
-              ),
-            ),
-            DataCell(
-              Text(
-                documentSnapshot['modedescription'],
-              ),
-            ),
-            DataCell(
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: getColor1(
-                    documentSnapshot['change'],
-                  ),
-                ),
-                title: Text(
-                  remind(
-                    documentSnapshot['change'],
-                  ),
-                ),
-              ),
-            ),
-            DataCell(
-              ListTile(
-                leading: CircleAvatar(
-                  child: Text(
-                    documentSnapshot['power'],
-                    style: TextStyle(color: Colors.blueGrey, fontSize: 20.0),
-                  ),
-                  backgroundColor: getColor2(
-                    documentSnapshot['power'],
-                  ),
-                ),
-              ),
-            ),
-            /*DataCell(
-              IconButton(
-                icon: Icon(Icons.photo),
-                onPressed: () {},
-              ),
-                ),*/
-        DataCell(
-              Text(
-                documentSnapshot['time'],
-              ),
-            ),
-            DataCell(
-              GestureDetector(
-                child: Icon(Icons.redo),
-                onTap: () {
-                  return showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('刪除確認'),
-                      content: Text('確定刪除此資料?'),
-                      actions: <Widget>[
-                        FlatButton(
-                          child: Text('否'),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
                         ),
-                        FlatButton(
-                          child: Text('是'),
-                          onPressed: () {
-                            firestore
-                                .collection('NTUTLab321')
-                                .doc(documentSnapshot.id)
-                                .set({
-                              
-                             
-                              'judge' : 'unused',
-                              'power': '0',
-                            });
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                onLongPress: () {
-                  //長按格式化雲端資料
-                  _delete();
-                },
+                      ),
+                    );
+                  },
+                ),
               ),
-            )
-          ],
-        );
-      },
-    ).toList();
-    return list;
+              actions: [
+                FlatButton(
+                  child: Text('確定'),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ]);
+        });
   }
 
   Future<void> check() async {
@@ -366,6 +166,256 @@ class _SupervisorState extends State<Supervisor> {
       ),
     );
   }
+
+  List<DataRow> createRows(QuerySnapshot snapshot) {
+    //顯示雲端資料
+    List<DataRow> list = snapshot.docs.map(
+      (DocumentSnapshot documentSnapshot) {
+        selector(documentSnapshot['alarm']);
+        return DataRow(
+          onSelectChanged: (context) {
+            showTimeCurveDialog();
+          },
+          cells: [
+            DataCell(
+              Text(documentSnapshot['title']),
+            ),
+            DataCell(
+              Padding(
+                padding: EdgeInsets.all(4.0),
+                child: Text(documentSnapshot['modedescription']),
+              ),
+            ),
+            DataCell(
+              Padding(
+                padding: EdgeInsets.all(4.0),
+                child: CircleAvatar(
+                  backgroundColor: getColor1(documentSnapshot['change']),
+                ),
+              ),
+            ),
+            DataCell(
+              Padding(
+                padding: EdgeInsets.all(4.0),
+                child: CircleAvatar(
+                  child: Text(
+                    documentSnapshot['power'],
+                    style: TextStyle(color: Colors.blueGrey, fontSize: 20.0),
+                  ),
+                  backgroundColor: getColor2(
+                    documentSnapshot['power'],
+                  ),
+                ),
+              ),
+            ),
+            DataCell(
+              Container(
+                width: 100.0,
+                child: Text(documentSnapshot['time']),
+              ),
+            ),
+            DataCell(
+              GestureDetector(
+                child: Icon(Icons.redo),
+                onTap: () {
+                  return showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('刪除確認'),
+                      content: Text('確定刪除此資料?'),
+                      actions: <Widget>[
+                        FlatButton(
+                          child: Text('否'),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                        FlatButton(
+                          child: Text('是'),
+                          onPressed: () {
+                            firestore
+                                .collection('NTUTLab321')
+                                .doc(documentSnapshot.id)
+                                .set({
+                              'judge': 'unused',
+                              'power': '0',
+                            });
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                onLongPress: () {
+                  //長按格式化雲端資料
+                  _delete();
+                },
+              ),
+            )
+          ],
+        );
+      },
+    ).toList();
+    return list;
+  }
+
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop, //退出app提醒
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('NTUTLab321點滴、尿袋智慧監控系統'),
+          actions: <Widget>[
+            PopupMenuButton(
+              itemBuilder: (context) => <PopupMenuEntry>[
+                //功能選單
+                PopupMenuItem(
+                  child: SwitchListTile(
+                    title: Text('鈴聲開關'),
+                    value: ring,
+                    onChanged: (bool value) {
+                      setState(
+                        () {
+                          ring = value;
+                        },
+                      );
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+                PopupMenuDivider(height: 1.0),
+                PopupMenuItem(
+                  child: RadioListTile(
+                    title: Text('編號排序'),
+                    value: lists.number,
+                    groupValue: choose,
+                    onChanged: (lists value) {
+                      setState(
+                        () {
+                          choose = value;
+                        },
+                      );
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+                PopupMenuItem(
+                  child: RadioListTile(
+                    title: Text('狀態排序'),
+                    value: lists.state,
+                    groupValue: choose,
+                    onChanged: (lists value) {
+                      setState(
+                        () {
+                          choose = value;
+                        },
+                      );
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+                PopupMenuItem(
+                  child: RadioListTile(
+                    title: Text('電量排序'),
+                    value: lists.battery,
+                    groupValue: choose,
+                    onChanged: (lists value) {
+                      setState(
+                        () {
+                          choose = value;
+                        },
+                      );
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+                PopupMenuDivider(height: 1.0),
+                PopupMenuItem(
+                  child: ListTile(
+                    leading: Icon(Icons.account_circle),
+                    title: Text('帳戶管理'),
+                    onTap: () {
+                      BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => GuestListPage(false),
+                      ));
+                    },
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
+        body: SafeArea(
+          child: Center(
+            child: Container(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _stream(choose), //根據所需的項目排序，選擇stream
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    //如果資料格式不符程式所需，印出錯誤
+                    return Text('Error: ${snapshot.error}');
+                  }
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting: //連接雲端中
+                      return Text('連接中...');
+                    default: //顯示雲端內的資料
+                      return ListView(
+                        children: <Widget>[
+                          DataTable(
+                            dataRowHeight: 60.0,
+                            columnSpacing: 3.0,
+                            showCheckboxColumn: false,
+                            columns: <DataColumn>[
+                              DataColumn(
+                                label: Text('編號'),
+                              ),
+                              DataColumn(
+                                label: Padding(
+                                  padding: EdgeInsets.all(4.0),
+                                  child: Text('模式'),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('狀態'),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('電量'),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text('工作紀錄'),
+                              ),
+                              DataColumn(
+                                label: Text('更換病人'),
+                              )
+                            ],
+                            rows: createRows(snapshot.data),
+                          ),
+                        ],
+                      );
+                  }
+                },
+              ),
+            ),
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          //暫時關閉警示鈴
+          child: Icon(Icons.alarm_off),
+          onPressed: () {
+            FlutterRingtonePlayer.stop();
+          },
+        ),
+      ),
+    );
+  }
 }
 
 enum lists { number, state, battery }
@@ -383,11 +433,11 @@ Stream<QuerySnapshot> _stream(var change) {
           .collection('NTUTLab321')
           .orderBy('change', descending: true)
           .snapshots();
-   case lists.battery:
-     return firestore
-         .collection('NTUTLab321')
-         .orderBy('power', descending: false)
-         .snapshots();
+    case lists.battery:
+      return firestore
+          .collection('NTUTLab321')
+          .orderBy('power', descending: false)
+          .snapshots();
     default:
       return firestore
           .collection('NTUTLab321')
