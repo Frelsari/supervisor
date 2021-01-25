@@ -20,10 +20,12 @@ class Supervisor extends StatefulWidget {
 }
 
 class _SupervisorState extends State<Supervisor> {
-  final firestore = FirebaseFirestore.instance;
-  var subscription;
-  ListOrder orderOption;
+  FirebaseFirestore _firestore;
+  Stream _dataStream;
+  List<Map<String, String>> machineList = [];
+  ListOrder order;
   bool ring = true;
+  var subscription;
 
   @override
   void initState() {
@@ -32,14 +34,20 @@ class _SupervisorState extends State<Supervisor> {
     subscription = Connectivity()
         .onConnectivityChanged
         .listen((result) => _showCheckInternetDialog());
+
+    // 初始化 firebase 集合
+    _firestore = FirebaseFirestore.instance;
+    _dataStream = _firestore.collection('NTUTLab321').snapshots();
+
+    // 預設排列方式
+    order = ListOrder.title;
+
     // 保持螢幕一直開啟
     Wakelock.enable();
-    orderOption = ListOrder.title;
   }
 
   Stream<QuerySnapshot> _stream(ListOrder order) {
-    print('current order = ${order.toString()}');
-    var collection = firestore.collection('NTUTLab321');
+    final collection = _firestore.collection('NTUTLab321');
     switch (order) {
       case ListOrder.change:
         return collection
@@ -168,7 +176,7 @@ class _SupervisorState extends State<Supervisor> {
   }
 
   Future<void> _showCheckInternetDialog() async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
+    final connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       return showDialog(
         context: context,
@@ -184,6 +192,37 @@ class _SupervisorState extends State<Supervisor> {
         ),
       );
     }
+  }
+
+  Future<void> _showDeleteMachineDataDialog(String machineId) async {
+    return showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('刪除確認'),
+          content: Text('確定刪除此資料?'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('取消', style: TextStyle(color: Colors.grey)),
+              onPressed: () => Navigator.pop(context),
+            ),
+            FlatButton(
+              child: Text('刪除'),
+              onPressed: () {
+                _firestore
+                    .collection('NTUTLab321')
+                    .doc(machineId)
+                    .set({
+                  'judge': 'unused',
+                  'power': '0',
+                });
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      }
+    );
   }
 
   // waiting for refactor
@@ -230,7 +269,7 @@ class _SupervisorState extends State<Supervisor> {
           FlatButton(
             child: Text('是'),
             onPressed: () {
-              firestore.collection('NTUTLab321').get().then(
+              _firestore.collection('NTUTLab321').get().then(
                 (snapshot) {
                   for (DocumentSnapshot documentSnapshot in snapshot.docs) {
                     documentSnapshot.reference.delete();
@@ -245,93 +284,80 @@ class _SupervisorState extends State<Supervisor> {
     );
   }
 
-  // 顯示雲端資料
-  List<DataRow> _createRows(QuerySnapshot snapshot) {
-    List<DataRow> dataRows = snapshot.docs.map(
-      (documentSnapshot) {
-        if (documentSnapshot['alarm'] == '1') triggerAlarm(ring);
-        return DataRow(
-          onSelectChanged: (context) => _showTimeCurveDialog(),
-          cells: [
-            DataCell(
-              Text(documentSnapshot['title']),
+  List<DataRow> getMachineRows() {
+    List<DataRow> rows = [];
+    switch (order) {
+      case ListOrder.title:
+        machineList.sort((a, b) => a['title'].compareTo(b['title']));
+        break;
+      case ListOrder.change:
+        machineList.sort((a, b) => a['change'].compareTo(b['change']));
+        break;
+      case ListOrder.power:
+        machineList.sort((a, b) {
+          int ap = int.parse(a['power']);
+          int bp = int.parse(b['power']);
+          return bp.compareTo(ap);
+        });
+        break;
+    }
+
+    for (var machine in machineList) {
+      if (machine['alarm'] == '1') triggerAlarm(ring);
+      DataRow row = DataRow(
+        onSelectChanged: (context) => _showTimeCurveDialog(),
+        cells: [
+          DataCell(
+            Text(machine['title']),
+          ),
+          DataCell(
+            Padding(
+              padding: EdgeInsets.all(4.0),
+              child: Text(machine['modedescription']),
             ),
-            DataCell(
-              Padding(
-                padding: EdgeInsets.all(4.0),
-                child: Text(documentSnapshot['modedescription']),
+          ),
+          DataCell(
+            Padding(
+              padding: EdgeInsets.all(4.0),
+              child: CircleAvatar(
+                backgroundColor: getChangeColor(machine['change']),
               ),
             ),
-            DataCell(
-              Padding(
-                padding: EdgeInsets.all(4.0),
-                child: CircleAvatar(
-                  backgroundColor: getChangeColor(documentSnapshot['change']),
+          ),
+          DataCell(
+            Padding(
+              padding: EdgeInsets.all(4.0),
+              child: CircleAvatar(
+                child: Text(
+                  machine['power'],
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 20.0),
                 ),
+                backgroundColor: getPowerColor(machine['power']),
               ),
             ),
-            DataCell(
-              Padding(
-                padding: EdgeInsets.all(4.0),
-                child: CircleAvatar(
-                  child: Text(
-                    documentSnapshot['power'],
-                    style: TextStyle(color: Colors.blueGrey, fontSize: 20.0),
-                  ),
-                  backgroundColor: getPowerColor(documentSnapshot['power']),
-                ),
-              ),
+          ),
+          DataCell(
+            Container(
+              width: 100.0,
+              child: Text(machine['time']),
             ),
-            DataCell(
-              Container(
-                width: 100.0,
-                child: Text(documentSnapshot['time']),
-              ),
-            ),
-            DataCell(
-              GestureDetector(
+          ),
+          DataCell(
+            GestureDetector(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
                 child: Icon(Icons.redo),
-                onTap: () {
-                  return showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('刪除確認'),
-                      content: Text('確定刪除此資料?'),
-                      actions: <Widget>[
-                        FlatButton(
-                          child: Text('否'),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                        FlatButton(
-                          child: Text('是'),
-                          onPressed: () {
-                            firestore
-                                .collection('NTUTLab321')
-                                .doc(documentSnapshot.id)
-                                .set({
-                              'judge': 'unused',
-                              'power': '0',
-                            });
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                onLongPress: () {
-                  //長按格式化雲端資料
-                  _delete();
-                },
               ),
-            )
-          ],
-        );
-      },
-    ).toList();
-    return dataRows;
+              onTap: () => _showDeleteMachineDataDialog(machine['id']),
+              onLongPress: () => _delete(),
+            ),
+          )
+        ],
+      );
+      rows.add(row);
+    }
+    print(machineList);
+    return rows;
   }
 
   Widget build(BuildContext context) {
@@ -359,9 +385,9 @@ class _SupervisorState extends State<Supervisor> {
                   child: RadioListTile(
                     title: Text('編號排序'),
                     value: ListOrder.title,
-                    groupValue: orderOption,
+                    groupValue: order,
                     onChanged: (value) {
-                      setState(() => orderOption = value);
+                      setState(() => order = value);
                       Navigator.pop(context);
                     },
                   ),
@@ -370,9 +396,9 @@ class _SupervisorState extends State<Supervisor> {
                   child: RadioListTile(
                     title: Text('狀態排序'),
                     value: ListOrder.change,
-                    groupValue: orderOption,
+                    groupValue: order,
                     onChanged: (value) {
-                      setState(() => orderOption = value);
+                      setState(() => order = value);
                       Navigator.pop(context);
                     },
                   ),
@@ -381,9 +407,9 @@ class _SupervisorState extends State<Supervisor> {
                   child: RadioListTile(
                     title: Text('電量排序'),
                     value: ListOrder.power,
-                    groupValue: orderOption,
+                    groupValue: order,
                     onChanged: (value) {
-                      setState(() => orderOption = value);
+                      setState(() => order = value);
                       Navigator.pop(context);
                     },
                   ),
@@ -410,16 +436,34 @@ class _SupervisorState extends State<Supervisor> {
           child: Center(
             child: Container(
               child: StreamBuilder<QuerySnapshot>(
-                stream: _stream(orderOption), // 根據所需的項目排序，選擇stream
-                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                stream: _dataStream, // 根據所需的項目排序，選擇stream
+                builder: (context, snapshot) {
+                  // 如果資料格式不符程式所需，印出錯誤
                   if (snapshot.hasError) {
-                    // 如果資料格式不符程式所需，印出錯誤
                     return Text('Error: ${snapshot.error}');
                   }
+
                   switch (snapshot.connectionState) {
-                    case ConnectionState.waiting: //連接雲端中
+                    case ConnectionState.waiting: // 連接雲端中
                       return Text('連接中...');
                     default: // 顯示雲端內的資料
+                      if (snapshot.hasData) {
+                        // 讀取當前機器狀態
+                        List<Map<String, String>> _machines = [];
+                        snapshot.data.docs.forEach((doc) {
+                          Map<String, String> machine = {
+                            'id': doc.id,
+                            'change': doc['change'],
+                            'modedescription': doc['modedescription'],
+                            'power': doc['power'],
+                            'time': doc['time'],
+                            'title': doc['title'],
+                          };
+                          _machines.add(machine);
+                        });
+                        // 覆寫機器列表
+                        machineList = _machines;
+                      }
                       return ListView(
                         children: <Widget>[
                           DataTable(
@@ -455,7 +499,7 @@ class _SupervisorState extends State<Supervisor> {
                                 label: Text('更換病人'),
                               )
                             ],
-                            rows: _createRows(snapshot.data),
+                            rows: getMachineRows(),
                           ),
                         ],
                       );
