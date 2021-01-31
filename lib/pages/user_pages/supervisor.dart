@@ -3,6 +3,7 @@ import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:firevisor/pages/user_lists/guest_list_page.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:connectivity/connectivity.dart';
@@ -30,6 +31,16 @@ class _SupervisorState extends State<Supervisor> {
   @override
   void initState() {
     super.initState();
+
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+
+    // 保持螢幕一直開啟
+    Wakelock.enable();
+
     // 檢查網路是否連接
     subscription = Connectivity()
         .onConnectivityChanged
@@ -41,27 +52,6 @@ class _SupervisorState extends State<Supervisor> {
 
     // 預設排列方式
     order = ListOrder.title;
-
-    // 保持螢幕一直開啟
-    Wakelock.enable();
-  }
-
-  Stream<QuerySnapshot> _stream(ListOrder order) {
-    final collection = _firestore.collection('NTUTLab321');
-    switch (order) {
-      case ListOrder.change:
-        return collection
-            .orderBy('change', descending: true)
-            .snapshots();
-      case ListOrder.power:
-        return collection
-            .orderBy('power', descending: false)
-            .snapshots();
-      default:
-        return collection
-            .orderBy('title', descending: false)
-            .snapshots();
-    }
   }
 
   Color getChangeColor(String change) {
