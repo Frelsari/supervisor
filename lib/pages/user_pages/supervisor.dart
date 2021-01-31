@@ -111,7 +111,7 @@ class _SupervisorState extends State<Supervisor> {
         context: context,
         builder: (context) {
           // for timecurve testing
-          List fakeData = [
+          List<String> fakeData = <String>[
             '07:24 已更換',
             '10:47 已更換',
             '12:13 已更換',
@@ -356,7 +356,6 @@ class _SupervisorState extends State<Supervisor> {
       );
       rows.add(row);
     }
-    print(machineList);
     return rows;
   }
 
@@ -437,7 +436,7 @@ class _SupervisorState extends State<Supervisor> {
             child: Container(
               child: StreamBuilder<QuerySnapshot>(
                 stream: _dataStream, // 根據所需的項目排序，選擇stream
-                builder: (context, snapshot) {
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   // 如果資料格式不符程式所需，印出錯誤
                   if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
@@ -447,6 +446,7 @@ class _SupervisorState extends State<Supervisor> {
                     case ConnectionState.waiting: // 連接雲端中
                       return Text('連接中...');
                     default: // 顯示雲端內的資料
+
                       if (snapshot.hasData) {
                         // 讀取當前機器狀態
                         List<Map<String, String>> _machines = [];
@@ -456,10 +456,11 @@ class _SupervisorState extends State<Supervisor> {
                             'change': doc['change'],
                             'modedescription': doc['modedescription'],
                             'power': doc['power'],
-                            'time': doc['time'],
+                            'time': doc['time'].toString(),
                             'title': doc['title'],
                           };
                           _machines.add(machine);
+                          // print(machine);
                         });
                         // 覆寫機器列表
                         machineList = _machines;
