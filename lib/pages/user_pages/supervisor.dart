@@ -1,3 +1,4 @@
+import 'package:firevisor/custom_widgets/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:firevisor/pages/user_lists/guest_list_page.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 import 'package:wakelock/wakelock.dart';
 
@@ -21,6 +23,7 @@ class Supervisor extends StatefulWidget {
 }
 
 class _SupervisorState extends State<Supervisor> {
+  static const themeColor = Colors.indigo;
   FirebaseFirestore _firestore;
   Stream _dataStream;
   List<Map<String, String>> machineList = [];
@@ -158,7 +161,7 @@ class _SupervisorState extends State<Supervisor> {
               ),
               actions: [
                 FlatButton(
-                  child: Text('確定'),
+                  child: Text('確定', style: TextStyle(color: themeColor)),
                   onPressed: () => Navigator.pop(context),
                 ),
               ]);
@@ -176,6 +179,7 @@ class _SupervisorState extends State<Supervisor> {
           actions: <Widget>[
             FlatButton(
               child: Text('確認'),
+              color: themeColor,
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -186,89 +190,87 @@ class _SupervisorState extends State<Supervisor> {
 
   Future<void> _showDeleteMachineDataDialog(String machineId) async {
     return showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('刪除確認'),
-          content: Text('確定刪除此資料?'),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('取消', style: TextStyle(color: Colors.grey)),
-              onPressed: () => Navigator.pop(context),
-            ),
-            FlatButton(
-              child: Text('刪除'),
-              onPressed: () {
-                _firestore
-                    .collection('NTUTLab321')
-                    .doc(machineId)
-                    .set({
-                  'judge': 'unused',
-                  'power': '0',
-                });
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      }
-    );
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('刪除確認'),
+            content: Text('確定刪除此資料？'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('取消', style: TextStyle(color: Colors.grey)),
+                onPressed: () => Navigator.pop(context),
+              ),
+              FlatButton(
+                child: Text('刪除', style: TextStyle(color: themeColor)),
+                onPressed: () {
+                  _firestore.collection('NTUTLab321').doc(machineId).set({
+                    'judge': 'unused',
+                    'power': '0',
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
   }
 
-  // waiting for refactor
-  Future<bool> _onWillPop() {
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('退出提醒'),
-        content: Text('確定退出此應用程式?'),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('否'),
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-          ),
-          FlatButton(
-            child: Text('是'),
-            onPressed: () {
-              Wakelock.disable();
-              FlutterRingtonePlayer.stop();
-              Navigator.of(context).pop(true);
-            },
-          )
-        ],
-      ),
-    );
-  }
-
-  // waiting for refactor
-  Future<bool> _delete() {
+  Future<bool> _showDeleteAllDialog() {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('格式化警告'),
-        content: Text('確定刪除全部資料?'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: [
+              Text('確定刪除全部資料？'),
+              Text('所有資料將無法復原。'),
+            ],
+          ),
+        ),
         actions: <Widget>[
           FlatButton(
-            child: Text('否'),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            child: Text('取消', style: TextStyle(color: Colors.grey)),
+            onPressed: () => Navigator.pop(context),
           ),
           FlatButton(
-            child: Text('是'),
+            child: Text('確定', style: TextStyle(color: themeColor)),
             onPressed: () {
               _firestore.collection('NTUTLab321').get().then(
                 (snapshot) {
-                  for (DocumentSnapshot documentSnapshot in snapshot.docs) {
-                    documentSnapshot.reference.delete();
+                  for (var snapshot in snapshot.docs) {
+                    snapshot.reference.delete();
                   }
                 },
               );
               Navigator.pop(context);
             },
           ),
+        ],
+      ),
+    );
+  }
+
+  // 退出 App 提醒
+  Future<bool> _onWillPop() {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('即將退出程式'),
+        content: Text('確定退出此應用程式？'),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('取消', style: TextStyle(color: Colors.grey)),
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          FlatButton(
+            child: Text('退出', style: TextStyle(color: themeColor)),
+            onPressed: () {
+              Wakelock.disable();
+              FlutterRingtonePlayer.stop();
+              Navigator.of(context).pop(true);
+            },
+          )
         ],
       ),
     );
@@ -339,7 +341,7 @@ class _SupervisorState extends State<Supervisor> {
                 child: Icon(Icons.redo),
               ),
               onTap: () => _showDeleteMachineDataDialog(machine['id']),
-              onLongPress: () => _delete(),
+              onLongPress: () => _showDeleteAllDialog(),
             ),
           )
         ],
@@ -354,7 +356,8 @@ class _SupervisorState extends State<Supervisor> {
       onWillPop: _onWillPop, // 退出app提醒
       child: Scaffold(
         appBar: AppBar(
-          title: Text('NTUTLab321點滴、尿袋智慧監控系統'),
+          title: Text('NTUTLab321 點滴尿袋智慧監控系統'),
+          backgroundColor: themeColor,
           actions: <Widget>[
             PopupMenuButton(
               itemBuilder: (context) => <PopupMenuEntry>[
@@ -429,14 +432,19 @@ class _SupervisorState extends State<Supervisor> {
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   // 如果資料格式不符程式所需，印出錯誤
                   if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
+                    print('Error: ${snapshot.error}');
+                    return MessageScreen(
+                      message: '資料載入出現問題，請稍後再試',
+                      child: Icon(
+                        Icons.error_outline,
+                        color: Colors.lightBlue,
+                        size: 48.0,
+                      ),
+                    );
                   }
 
                   switch (snapshot.connectionState) {
-                    case ConnectionState.waiting: // 連接雲端中
-                      return Text('連接中...');
-                    default: // 顯示雲端內的資料
-
+                    case ConnectionState.active:
                       if (snapshot.hasData) {
                         // 讀取當前機器狀態
                         List<Map<String, String>> _machines = [];
@@ -455,6 +463,7 @@ class _SupervisorState extends State<Supervisor> {
                         // 覆寫機器列表
                         machineList = _machines;
                       }
+                      // 顯示雲端內的資料
                       return ListView(
                         children: <Widget>[
                           DataTable(
@@ -494,6 +503,29 @@ class _SupervisorState extends State<Supervisor> {
                           ),
                         ],
                       );
+                    case ConnectionState.waiting: // 連接雲端中
+                      return MessageScreen(
+                        message: '載入資料中...',
+                        child: SpinKitRing(color: Colors.lightBlue),
+                      );
+                    case ConnectionState.none:
+                      return MessageScreen(
+                        message: '請檢查手機連線',
+                        child: Icon(
+                          Icons.perm_scan_wifi_rounded,
+                          color: Colors.lightBlue,
+                          size: 48.0,
+                        ),
+                      );
+                    default:
+                      return MessageScreen(
+                        message: 'Unexpected error',
+                        child: Icon(
+                          Icons.warning_outlined,
+                          color: Colors.lightBlue,
+                          size: 48.0,
+                        ),
+                      );
                   }
                 },
               ),
@@ -501,11 +533,10 @@ class _SupervisorState extends State<Supervisor> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          //暫時關閉警示鈴
+          // 暫時關閉警示鈴
           child: Icon(Icons.alarm_off),
-          onPressed: () {
-            FlutterRingtonePlayer.stop();
-          },
+          backgroundColor: themeColor,
+          onPressed: () => FlutterRingtonePlayer.stop(),
         ),
       ),
     );
