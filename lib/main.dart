@@ -11,6 +11,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:firevisor/blocs/staff_bloc/staff_bloc.dart';
 
+import 'pages/login_page.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();

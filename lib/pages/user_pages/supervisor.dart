@@ -1,4 +1,5 @@
 import 'package:firevisor/custom_widgets/message_screen.dart';
+import 'package:firevisor/custom_widgets/time_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:firevisor/pages/user_lists/guest_list_page.dart';
@@ -99,72 +100,22 @@ class _SupervisorState extends State<Supervisor> {
     }
   }
 
-  Future<void> _showTimeCurveDialog() async {
+  Future<void> _showTimeCurveDialog(Map<String, String> machine) async {
     return showDialog<void>(
         context: context,
         builder: (context) {
-          // for timecurve testing
-          List<String> fakeData = <String>[
-            '07:24 已更換',
-            '10:47 已更換',
-            '12:13 已更換',
-            '16:21 已更換',
-            '17:33 已更換'
-          ];
-          var now = DateTime.now();
-
           return AlertDialog(
-              title: Text('歷史紀錄 ${now.month}/${now.day}'),
-              content: Container(
-                height: 300.0,
-                width: 300.0,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.indigo),
-                  borderRadius: BorderRadius.circular(5.0),
-                ),
-                child: ListView.builder(
-                  itemCount: fakeData.length,
-                  itemBuilder: (context, index) {
-                    return TimelineTile(
-                      alignment: TimelineAlign.manual,
-                      lineXY: 0.2,
-                      indicatorStyle: IndicatorStyle(
-                        color: Colors.indigo,
-                        width: 40.0,
-                        height: 40.0,
-                        indicator: CircleAvatar(
-                          backgroundColor: Colors.indigo,
-                          radius: 100.0,
-                          child: Text(
-                            '${index + 1}',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24.0,
-                            ),
-                          ),
-                        ),
-                      ),
-                      afterLineStyle: LineStyle(color: Colors.indigo),
-                      beforeLineStyle: LineStyle(color: Colors.indigo),
-                      endChild: Container(
-                        margin: EdgeInsets.all(12.0),
-                        child: Text(
-                          fakeData[index],
-                          style: TextStyle(
-                            fontSize: 18.0,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+            title: Text('${machine['title']} 歷史紀錄'),
+            content: SingleChildScrollView(
+              child: TimeChart(),
+            ),
+            actions: [
+              FlatButton(
+                child: Text('確定', style: TextStyle(color: themeColor)),
+                onPressed: () => Navigator.pop(context),
               ),
-              actions: [
-                FlatButton(
-                  child: Text('確定', style: TextStyle(color: themeColor)),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ]);
+            ],
+          );
         });
   }
 
@@ -297,7 +248,7 @@ class _SupervisorState extends State<Supervisor> {
     for (var machine in machineList) {
       if (machine['alarm'] == '1') triggerAlarm(ring);
       DataRow row = DataRow(
-        onSelectChanged: (context) => _showTimeCurveDialog(),
+        onSelectChanged: (context) => _showTimeCurveDialog(machine),
         cells: [
           DataCell(
             Text(machine['title']),
@@ -428,7 +379,7 @@ class _SupervisorState extends State<Supervisor> {
           child: Center(
             child: Container(
               child: StreamBuilder<QuerySnapshot>(
-                stream: _dataStream, // 根據所需的項目排序，選擇stream
+                stream: _dataStream,
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   // 如果資料格式不符程式所需，印出錯誤
                   if (snapshot.hasError) {
@@ -437,7 +388,7 @@ class _SupervisorState extends State<Supervisor> {
                       message: '資料載入出現問題，請稍後再試',
                       child: Icon(
                         Icons.error_outline,
-                        color: Colors.lightBlue,
+                        color: themeColor,
                         size: 48.0,
                       ),
                     );
@@ -506,14 +457,14 @@ class _SupervisorState extends State<Supervisor> {
                     case ConnectionState.waiting: // 連接雲端中
                       return MessageScreen(
                         message: '載入資料中...',
-                        child: SpinKitRing(color: Colors.lightBlue),
+                        child: SpinKitRing(color: themeColor),
                       );
                     case ConnectionState.none:
                       return MessageScreen(
                         message: '請檢查手機連線',
                         child: Icon(
                           Icons.perm_scan_wifi_rounded,
-                          color: Colors.lightBlue,
+                          color: themeColor,
                           size: 48.0,
                         ),
                       );
@@ -522,7 +473,7 @@ class _SupervisorState extends State<Supervisor> {
                         message: 'Unexpected error',
                         child: Icon(
                           Icons.warning_outlined,
-                          color: Colors.lightBlue,
+                          color: themeColor,
                           size: 48.0,
                         ),
                       );
