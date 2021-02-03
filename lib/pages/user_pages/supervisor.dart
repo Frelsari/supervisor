@@ -10,11 +10,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:timeline_tile/timeline_tile.dart';
 import 'package:wakelock/wakelock.dart';
 
 // 機器排序方法：編號、狀態、電量
-enum ListOrder { title, change, power }
+enum ListOrder { judge, change, power }
 
 class Supervisor extends StatefulWidget {
   static const sName = "/supervisor";
@@ -55,7 +54,7 @@ class _SupervisorState extends State<Supervisor> {
     _dataStream = _firestore.collection('NTUTLab321').snapshots();
 
     // 預設排列方式
-    order = ListOrder.title;
+    order = ListOrder.judge;
   }
 
   Color getChangeColor(String change) {
@@ -105,9 +104,12 @@ class _SupervisorState extends State<Supervisor> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('${machine['title']} 歷史紀錄'),
+            title: Text('${machine['judge']} 歷史紀錄'),
             content: SingleChildScrollView(
-              child: TimeChart(),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(0, 28.0, 16.0, 0),
+                child: TimeChart(),
+              ),
             ),
             actions: [
               FlatButton(
@@ -230,8 +232,8 @@ class _SupervisorState extends State<Supervisor> {
   List<DataRow> getMachineRows() {
     List<DataRow> rows = [];
     switch (order) {
-      case ListOrder.title:
-        machineList.sort((a, b) => a['title'].compareTo(b['title']));
+      case ListOrder.judge:
+        machineList.sort((a, b) => a['judge'].compareTo(b['judge']));
         break;
       case ListOrder.change:
         machineList.sort((a, b) => a['change'].compareTo(b['change']));
@@ -251,7 +253,7 @@ class _SupervisorState extends State<Supervisor> {
         onSelectChanged: (context) => _showTimeCurveDialog(machine),
         cells: [
           DataCell(
-            Text(machine['title']),
+            Text(machine['judge']),
           ),
           DataCell(
             Padding(
@@ -327,7 +329,7 @@ class _SupervisorState extends State<Supervisor> {
                 PopupMenuItem(
                   child: RadioListTile(
                     title: Text('編號排序'),
-                    value: ListOrder.title,
+                    value: ListOrder.judge,
                     groupValue: order,
                     onChanged: (value) {
                       setState(() => order = value);
@@ -399,17 +401,27 @@ class _SupervisorState extends State<Supervisor> {
                       if (snapshot.hasData) {
                         // 讀取當前機器狀態
                         List<Map<String, String>> _machines = [];
+
                         snapshot.data.docs.forEach((doc) {
-                          Map<String, String> machine = {
-                            'id': doc.id,
-                            'change': doc['change'],
-                            'modedescription': doc['modedescription'],
-                            'power': doc['power'],
-                            'time': doc['time'].toString(),
-                            'title': doc['title'],
-                          };
-                          _machines.add(machine);
-                          // print(machine);
+                          // 測試輸出
+                          if (doc.exists) {
+                            Map<String, String> machine = {};
+
+                            machine = {
+                              'id': doc.id,
+                              'alarm': doc['alarm'],
+                              'change': doc['change'],
+                              'modedescription': doc['modedescription'],
+                              'power': doc['power'],
+                              'time': doc['time'].toString(),
+                              'judge': doc['judge'],
+                            };
+
+                            // print(machine);
+                            _machines.add(machine);
+                          } else {
+                            print('${doc.id} does not exist in machine collection');
+                          }
                         });
                         // 覆寫機器列表
                         machineList = _machines;
