@@ -26,6 +26,7 @@ class _SupervisorState extends State<Supervisor> {
   static const themeColor = Colors.indigo;
   FirebaseFirestore _firestore;
   Stream _dataStream;
+  CollectionReference _collection;
   List<Map<String, String>> machineList = [];
   ListOrder order;
   bool ring = true;
@@ -50,8 +51,9 @@ class _SupervisorState extends State<Supervisor> {
         .listen((result) => _showCheckInternetDialog());
 
     // 初始化 firebase 集合
-    _firestore = FirebaseFirestore.instance;
-    _dataStream = _firestore.collection('NTUTLab321').snapshots();
+    _collection = FirebaseFirestore.instance.collection('NTUTLab321');
+    _dataStream = _collection.snapshots();
+    checkTimeData();
 
     // 預設排列方式
     order = ListOrder.judge;
@@ -82,14 +84,32 @@ class _SupervisorState extends State<Supervisor> {
     }
   }
 
+  void checkTimeData() {
+    _collection.get().then((snapshot) {
+      snapshot.docs.forEach((doc) {
+        List<Timestamp> timeList;
+        final now = DateTime.now();
+        for (var time in doc['time']) {
+          DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(time.millisecondsSinceEpoch);
+          if (dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day) {
+            timeList.add(time);
+          }
+        }
+        _collection.doc(doc.id).update({'time': timeList});
+      });
+    });
+
+
+  }
+
   // 狀態 DataColumn 為紅色時，會有一個 check (目前已移除)
-  // String remind(String txt) {
-  //   if (txt == '1') {
-  //     return 'check';
-  //   } else {
-  //     return '';
-  //   }
-  // }
+  String remindText(String change) {
+    if (change == '1') {
+      return 'Check!';
+    } else {
+      return 'OK';
+    }
+  }
 
   void triggerAlarm(bool ring) {
     if (ring) {
@@ -100,9 +120,11 @@ class _SupervisorState extends State<Supervisor> {
   }
 
   Future<void> _showTimeCurveDialog(Map<String, String> machine) async {
+    checkTimeData();
     return showDialog<void>(
         context: context,
         builder: (context) {
+          bool _showChart = true;
           return AlertDialog(
             title: Text('${machine['judge']} 歷史紀錄'),
             content: SingleChildScrollView(
@@ -156,7 +178,7 @@ class _SupervisorState extends State<Supervisor> {
               FlatButton(
                 child: Text('刪除', style: TextStyle(color: themeColor)),
                 onPressed: () {
-                  _firestore.collection('NTUTLab321').doc(machineId).set({
+                  _collection.doc(machineId).set({
                     'judge': 'unused',
                     'power': '0',
                   });
@@ -189,7 +211,7 @@ class _SupervisorState extends State<Supervisor> {
           FlatButton(
             child: Text('確定', style: TextStyle(color: themeColor)),
             onPressed: () {
-              _firestore.collection('NTUTLab321').get().then(
+              _collection.get().then(
                 (snapshot) {
                   for (var snapshot in snapshot.docs) {
                     snapshot.reference.delete();
@@ -253,25 +275,36 @@ class _SupervisorState extends State<Supervisor> {
         onSelectChanged: (context) => _showTimeCurveDialog(machine),
         cells: [
           DataCell(
-            Text(machine['judge']),
-          ),
-          DataCell(
-            Padding(
-              padding: EdgeInsets.all(4.0),
-              child: Text(machine['modedescription']),
+            SizedBox(
+              width: 48.0,
+              child: Center(child: Text(machine['judge'])),
             ),
           ),
           DataCell(
-            Padding(
-              padding: EdgeInsets.all(4.0),
-              child: CircleAvatar(
-                backgroundColor: getChangeColor(machine['change']),
+            SizedBox(
+              width: 48.0,
+              child: Center(child: Text(machine['modedescription'])),
+            ),
+          ),
+          DataCell(
+            SizedBox(
+              width: 88.0,
+              child: Center(
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: getChangeColor(machine['change']),
+                    ),
+                    SizedBox(width: 4.0),
+                    Text(remindText(machine['change'])),
+                  ],
+                ),
               ),
             ),
           ),
           DataCell(
-            Padding(
-              padding: EdgeInsets.all(4.0),
+            SizedBox(
+              width: 44.0,
               child: CircleAvatar(
                 child: Text(
                   machine['power'],
@@ -282,19 +315,24 @@ class _SupervisorState extends State<Supervisor> {
             ),
           ),
           DataCell(
-            Container(
-              width: 100.0,
-              child: Text(machine['time']),
+            SizedBox(
+              width: 40.0,
+              child: IconButton(
+                icon: Icon(Icons.stacked_line_chart),
+                onPressed: () => _showTimeCurveDialog(machine),
+              ),
             ),
           ),
           DataCell(
-            GestureDetector(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Icon(Icons.redo),
+            SizedBox(
+              width: 60.0,
+              child: Center(
+                child: GestureDetector(
+                  child: Icon(Icons.redo),
+                  onTap: () => _showDeleteMachineDataDialog(machine['id']),
+                  onLongPress: () => _showDeleteAllDialog(),
+                ),
               ),
-              onTap: () => _showDeleteMachineDataDialog(machine['id']),
-              onLongPress: () => _showDeleteAllDialog(),
             ),
           )
         ],
@@ -405,9 +443,7 @@ class _SupervisorState extends State<Supervisor> {
                         snapshot.data.docs.forEach((doc) {
                           // 測試輸出
                           if (doc.exists) {
-                            Map<String, String> machine = {};
-
-                            machine = {
+                            Map<String, String> machine = {
                               'id': doc.id,
                               'alarm': doc['alarm'],
                               'change': doc['change'],
@@ -417,10 +453,11 @@ class _SupervisorState extends State<Supervisor> {
                               'judge': doc['judge'],
                             };
 
-                            // print(machine);
+                            print(machine);
                             _machines.add(machine);
                           } else {
-                            print('${doc.id} does not exist in machine collection');
+                            print(
+                                '${doc.id} does not exist in machine collection');
                           }
                         });
                         // 覆寫機器列表
@@ -435,31 +472,40 @@ class _SupervisorState extends State<Supervisor> {
                             showCheckboxColumn: false,
                             columns: <DataColumn>[
                               DataColumn(
-                                label: Text('編號'),
-                              ),
-                              DataColumn(
-                                label: Padding(
-                                  padding: EdgeInsets.all(4.0),
-                                  child: Text('模式'),
+                                label: SizedBox(
+                                  width: 48.0,
+                                  child: Center(child: Text('編號')),
                                 ),
                               ),
                               DataColumn(
-                                label: Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text('狀態'),
+                                label: SizedBox(
+                                  width: 48.0,
+                                  child: Center(child: Text('模式')),
                                 ),
                               ),
                               DataColumn(
-                                label: Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text('電量'),
+                                label: SizedBox(
+                                  width: 88.0,
+                                  child: Center(child: Text('狀態')),
                                 ),
                               ),
                               DataColumn(
-                                label: Text('工作紀錄'),
+                                label: SizedBox(
+                                  width: 44.0,
+                                  child: Center(child: Text('電量')),
+                                ),
                               ),
                               DataColumn(
-                                label: Text('更換病人'),
+                                label: SizedBox(
+                                  width: 40.0,
+                                  child: Center(child: Text('記錄')),
+                                ),
+                              ),
+                              DataColumn(
+                                label: SizedBox(
+                                  width: 60.0,
+                                  child: Center(child: Text('更換病人')),
+                                ),
                               )
                             ],
                             rows: getMachineRows(),
