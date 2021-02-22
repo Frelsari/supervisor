@@ -24,7 +24,6 @@ class Supervisor extends StatefulWidget {
 
 class _SupervisorState extends State<Supervisor> {
   static const themeColor = Colors.indigo;
-  FirebaseFirestore _firestore;
   Stream _dataStream;
   CollectionReference _collection;
   List<Map<String, String>> machineList = [];
@@ -98,8 +97,6 @@ class _SupervisorState extends State<Supervisor> {
         _collection.doc(doc.id).update({'time': timeList});
       });
     });
-
-
   }
 
   // 狀態 DataColumn 為紅色時，會有一個 check (目前已移除)
@@ -121,16 +118,25 @@ class _SupervisorState extends State<Supervisor> {
 
   Future<void> _showTimeCurveDialog(Map<String, String> machine) async {
     checkTimeData();
+    List replaceTimes = [];
+    await _collection.doc(machine['id']).get().then((snapshot) {
+      if (snapshot.exists) {
+        // print(snapshot.data()['time']);
+        snapshot.data()['time'].forEach((time) {
+          replaceTimes.add(time['timestamp']);
+        });
+        // print('@supervisor.dart -> replaceTimes = $replaceTimes');
+      }
+    });
     return showDialog<void>(
         context: context,
         builder: (context) {
-          bool _showChart = true;
           return AlertDialog(
             title: Text('${machine['judge']} 歷史紀錄'),
             content: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(0, 28.0, 16.0, 0),
-                child: TimeChart(),
+                child: TimeChart(times: replaceTimes),
               ),
             ),
             actions: [
@@ -449,10 +455,8 @@ class _SupervisorState extends State<Supervisor> {
                               'change': doc['change'],
                               'modedescription': doc['modedescription'],
                               'power': doc['power'],
-                              'time': doc['time'].toString(),
                               'judge': doc['judge'],
                             };
-
                             print(machine);
                             _machines.add(machine);
                           } else {

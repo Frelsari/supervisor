@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class TimeChart extends StatelessWidget {
-  const TimeChart({Key key}) : super(key: key);
+  final List _times;
+  const TimeChart({Key key, List times}) : _times = times, super(key: key);
 
   // Lerps between a [LinearGradient] colors, based on [t]
   Color lerpGradient(List<Color> colors, List<double> stops, double t) {
@@ -32,24 +34,21 @@ class TimeChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final _fakeData = [
-      DateTime(2021, now.month, now.day, 1, 32),
-      DateTime(2021, now.month, now.day, 3, 49),
-      DateTime(2021, now.month, now.day, 7, 14),
-      DateTime(2021, now.month, now.day, 13, 51),
-      DateTime(2021, now.month, now.day, 16, 28),
-    ];
+    List<DateTime> _timeData = [];
+    _times.forEach((timestamp) {
+      // print(timestamp);
+      _timeData.add(DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch));
+    });
+    print(_timeData);
 
     List<int> indicatorList = [];
-    // print('generate indicator list');
-    _fakeData.forEach((time) {
-      // print('${time.hour * 60 + time.minute}');
+    _timeData.forEach((time) {
       indicatorList.add(time.hour * 60 + time.minute);
     });
 
     int count = 0;
     List<FlSpot> allSpots = List<FlSpot>.generate(24 * 60, (index) {
-      if (count < _fakeData.length && index == indicatorList[count]) count++;
+      if (count < _timeData.length && index == indicatorList[count]) count++;
       // print('x = $index, y = $count');
       return FlSpot(index.toDouble(), count.toDouble());
     });
