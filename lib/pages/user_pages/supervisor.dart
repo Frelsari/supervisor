@@ -52,7 +52,7 @@ class _SupervisorState extends State<Supervisor> {
     // 初始化 firebase 集合
     _collection = FirebaseFirestore.instance.collection('NTUTLab321');
     _dataStream = _collection.snapshots();
-    checkTimeData();
+    // checkTimeData();
 
     // 預設排列方式
     order = ListOrder.judge;
@@ -83,22 +83,6 @@ class _SupervisorState extends State<Supervisor> {
     }
   }
 
-  void checkTimeData() {
-    _collection.get().then((snapshot) {
-      snapshot.docs.forEach((doc) {
-        List<Timestamp> timeList;
-        final now = DateTime.now();
-        for (var time in doc['time']) {
-          DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(time.millisecondsSinceEpoch);
-          if (dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day) {
-            timeList.add(time);
-          }
-        }
-        _collection.doc(doc.id).update({'time': timeList});
-      });
-    });
-  }
-
   // 狀態 DataColumn 為紅色時，會有一個 check (目前已移除)
   String remindText(String change) {
     if (change == '1') {
@@ -117,15 +101,25 @@ class _SupervisorState extends State<Supervisor> {
   }
 
   Future<void> _showTimeCurveDialog(Map<String, String> machine) async {
-    checkTimeData();
     List replaceTimes = [];
+    List mapList = [];
+    bool hasData;
     await _collection.doc(machine['id']).get().then((snapshot) {
-      if (snapshot.exists) {
-        // print(snapshot.data()['time']);
+      hasData = snapshot.exists && snapshot.data()['time'] != null;
+      if (hasData) {
+        // get timestamp list
         snapshot.data()['time'].forEach((time) {
-          replaceTimes.add(time['timestamp']);
+          final now = DateTime.now();
+          final dateTime = time['timestamp'].toDate();
+          if (now.year == dateTime.year && now.month == dateTime.month && now.day == dateTime.day) {
+            replaceTimes.add(time['timestamp']);
+            mapList.add(time);
+          }
         });
-        // print('@supervisor.dart -> replaceTimes = $replaceTimes');
+        // update timeList to firebase
+        _collection.doc(machine['id']).update({'time': mapList});
+      } else {
+        print('Machine ${machine['id']} does not exist');
       }
     });
     return showDialog<void>(
@@ -134,10 +128,12 @@ class _SupervisorState extends State<Supervisor> {
           return AlertDialog(
             title: Text('${machine['judge']} 歷史紀錄'),
             content: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 28.0, 16.0, 0),
-                child: TimeChart(times: replaceTimes),
-              ),
+              child: hasData
+                  ? Padding(
+                      padding: EdgeInsets.fromLTRB(0, 28.0, 16.0, 0),
+                      child: TimeChart(times: replaceTimes),
+                    )
+                  : Center(child: Text('系統資料發生錯誤')),
             ),
             actions: [
               FlatButton(
@@ -288,7 +284,7 @@ class _SupervisorState extends State<Supervisor> {
           ),
           DataCell(
             SizedBox(
-              width: 48.0,
+              width: 56.0,
               child: Center(child: Text(machine['modedescription'])),
             ),
           ),
@@ -483,7 +479,7 @@ class _SupervisorState extends State<Supervisor> {
                               ),
                               DataColumn(
                                 label: SizedBox(
-                                  width: 48.0,
+                                  width: 56.0,
                                   child: Center(child: Text('模式')),
                                 ),
                               ),
@@ -502,7 +498,7 @@ class _SupervisorState extends State<Supervisor> {
                               DataColumn(
                                 label: SizedBox(
                                   width: 40.0,
-                                  child: Center(child: Text('記錄')),
+                                  child: Center(child: Text('紀錄')),
                                 ),
                               ),
                               DataColumn(

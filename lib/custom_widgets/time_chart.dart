@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -37,7 +36,7 @@ class TimeChart extends StatelessWidget {
     List<DateTime> _timeData = [];
     _times.forEach((timestamp) {
       // print(timestamp);
-      _timeData.add(DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch));
+      _timeData.add(timestamp.toDate());
     });
     print(_timeData);
 
