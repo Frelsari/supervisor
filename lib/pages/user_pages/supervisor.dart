@@ -63,8 +63,11 @@ class _SupervisorState extends State<Supervisor> {
       case '0':
         return Colors.greenAccent;
       case '1':
-        triggerAlarm(ring);
         return Colors.redAccent;
+      case 'E':
+        return Colors.yellowAccent;
+      case 'X':
+        return Colors.grey;
       default:
         return Colors.black12;
     }
@@ -85,10 +88,17 @@ class _SupervisorState extends State<Supervisor> {
 
   // 狀態 DataColumn 為紅色時，會有一個 check (目前已移除)
   String remindText(String change) {
-    if (change == '1') {
-      return 'Check!';
-    } else {
-      return 'OK';
+    switch (change) {
+      case '0':
+        return 'OK';
+      case '1':
+        return 'Check';
+      case 'X':
+        return '待機中';
+      case 'E':
+        return '故障';
+      default:
+        return '未知';
     }
   }
 
@@ -171,18 +181,21 @@ class _SupervisorState extends State<Supervisor> {
         builder: (context) {
           return AlertDialog(
             title: Text('刪除確認'),
-            content: Text('確定刪除此資料？'),
+            content: Text('確定清除 $machineId 的資料？'),
             actions: <Widget>[
               FlatButton(
                 child: Text('取消', style: TextStyle(color: Colors.grey)),
                 onPressed: () => Navigator.pop(context),
               ),
               FlatButton(
-                child: Text('刪除', style: TextStyle(color: themeColor)),
+                child: Text('清除', style: TextStyle(color: themeColor)),
                 onPressed: () {
-                  _collection.doc(machineId).set({
+                  _collection.doc(machineId).update({
                     'judge': 'unused',
-                    'power': '0',
+                    'change': 'X',
+                    'alarm': '0',
+                    'modedescription': '未使用',
+                    'time': [],
                   });
                   Navigator.pop(context);
                 },
@@ -272,10 +285,16 @@ class _SupervisorState extends State<Supervisor> {
     }
 
     for (var machine in machineList) {
-      if (machine['alarm'] == '1') triggerAlarm(ring);
+      // if (machine['alarm'] == '1') triggerAlarm(ring);
       DataRow row = DataRow(
         onSelectChanged: (context) => _showTimeCurveDialog(machine),
         cells: [
+          DataCell(
+            SizedBox(
+              width: 40.0,
+              child: Center(child: Text(machine['id'].substring(0, 5))),
+            ),
+          ),
           DataCell(
             SizedBox(
               width: 48.0,
@@ -318,25 +337,27 @@ class _SupervisorState extends State<Supervisor> {
           ),
           DataCell(
             SizedBox(
-              width: 40.0,
-              child: IconButton(
-                icon: Icon(Icons.stacked_line_chart),
-                onPressed: () => _showTimeCurveDialog(machine),
+              width: 32.0,
+              child: Center(
+                child: GestureDetector(
+                  child: Icon(Icons.timeline),
+                  onTap: () => _showTimeCurveDialog(machine),
+                ),
               ),
             ),
           ),
           DataCell(
             SizedBox(
-              width: 60.0,
+              width: 32.0,
               child: Center(
                 child: GestureDetector(
-                  child: Icon(Icons.redo),
+                  child: Icon(Icons.delete_rounded),
                   onTap: () => _showDeleteMachineDataDialog(machine['id']),
                   onLongPress: () => _showDeleteAllDialog(),
                 ),
               ),
             ),
-          )
+          ),
         ],
       );
       rows.add(row);
@@ -479,6 +500,12 @@ class _SupervisorState extends State<Supervisor> {
                               ),
                               DataColumn(
                                 label: SizedBox(
+                                  width: 48.0,
+                                  child: Center(child: Text('床室號')),
+                                ),
+                              ),
+                              DataColumn(
+                                label: SizedBox(
                                   width: 56.0,
                                   child: Center(child: Text('模式')),
                                 ),
@@ -497,16 +524,16 @@ class _SupervisorState extends State<Supervisor> {
                               ),
                               DataColumn(
                                 label: SizedBox(
-                                  width: 40.0,
+                                  width: 32.0,
                                   child: Center(child: Text('紀錄')),
                                 ),
                               ),
                               DataColumn(
                                 label: SizedBox(
-                                  width: 60.0,
-                                  child: Center(child: Text('更換病人')),
+                                  width: 32.0,
+                                  child: Center(child: Text('清除')),
                                 ),
-                              )
+                              ),
                             ],
                             rows: getMachineRows(),
                           ),
