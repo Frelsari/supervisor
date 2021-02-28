@@ -75,7 +75,7 @@ class _GuestState extends State<Guest> {
               _data['change'] = snapshot.data['change'];
               _data['modedescription'] = snapshot.data['modedescription'];
               _data['power'] = snapshot.data['power'];
-              _data['time'] = snapshot.data['time'];
+              // _data['time'] = snapshot.data['time'];
               print('@guest_page.dart -> _data = $_data');
             }
             switch (snapshot.connectionState) {
@@ -198,29 +198,6 @@ class _GuestState extends State<Guest> {
                           Text(
                             _data['power'],
                             style: TextStyle(fontSize: 20.0),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Divider(color: Colors.black),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(width: 40.0),
-                          Text(
-                            '工作紀錄',
-                            style: TextStyle(
-                                fontSize: 24.0, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(width: 20.0),
-                          Flexible(
-                            child: Text(
-                              _data['time'],
-                              style: TextStyle(fontSize: 20.0),
-                            ),
                           ),
                         ],
                       ),

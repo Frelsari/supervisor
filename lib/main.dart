@@ -1,3 +1,4 @@
+import 'package:firevisor/pages/test_page.dart';
 import 'package:firevisor/pages/user_pages/supervisor.dart';
 import 'package:flutter/material.dart';
 import 'package:firevisor/blocs/authenticate_bloc/authenticate_bloc.dart';
@@ -9,6 +10,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firevisor/blocs/guest_bloc/guest_bloc.dart';
 import 'package:firevisor/blocs/staff_bloc/staff_bloc.dart';
+
+import 'pages/login_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,8 +40,7 @@ class MyApp extends StatelessWidget {
       routes: {
         Login.sName: (context) => Login(),
         User.sName: (context) => User(),
-        Administrator.sName: (context) => Administrator(),
-        Supervisor.sName: (context) => Supervisor(),
+        TimeCurvePage.sName: (context) => TimeCurvePage(),
       },
       builder: (context, child) {
         final MediaQueryData data = MediaQuery.of(context);

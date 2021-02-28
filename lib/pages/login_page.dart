@@ -267,7 +267,7 @@ class Login extends StatelessWidget {
               ),
               SizedBox(height: 20.0),
               Text(
-                '特別感謝：台北榮民醫院 - 蘇澳暨圓山分院 協助開發',
+                '特別感謝：台北榮民醫院 - 蘇澳暨員山分院 協助開發',
                 style: TextStyle(
                   color: Colors.grey[700],
                   fontWeight: FontWeight.bold,

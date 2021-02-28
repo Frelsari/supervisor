@@ -148,7 +148,7 @@ Future<Map<String, String>> getGuestData(String serialNumber) async {
         'change': data['machineData']['change'],
         'modedescription': data['machineData']['modedescription'],
         'power': data['machineData']['power'],
-        'time': data['machineData']['time'],
+        // 'time': data['machineData']['time'],
         'serialNumber': data['guestDocument']['serialNumber'].toString(),
         'expire': data['guestDocument']['expire'].toString(),
         'position': data['guestDocument']['position'],
