@@ -90,15 +90,15 @@ class _SupervisorState extends State<Supervisor> {
   String remindText(String change) {
     switch (change) {
       case '0':
-        return 'OK';
+        return '正常';
       case '1':
-        return 'Check';
+        return '請更換';
       case 'X':
-        return '待機中';
+        return '未使用';
       case 'E':
         return '故障';
       default:
-        return '未知';
+        return '異常';
     }
   }
 
@@ -136,7 +136,7 @@ class _SupervisorState extends State<Supervisor> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('${machine['judge']} 歷史紀錄'),
+            title: Text('${machine['judge']} 歷史紀錄 (${machine['id'].substring(0,5)})'),
             content: SingleChildScrollView(
               child: hasData
                   ? Padding(
@@ -285,7 +285,7 @@ class _SupervisorState extends State<Supervisor> {
     }
 
     for (var machine in machineList) {
-      // if (machine['alarm'] == '1') triggerAlarm(ring);
+      if (machine['change'] == '1') triggerAlarm(ring);
       DataRow row = DataRow(
         onSelectChanged: (context) => _showTimeCurveDialog(machine),
         cells: [
@@ -389,7 +389,7 @@ class _SupervisorState extends State<Supervisor> {
                 PopupMenuDivider(height: 1.0),
                 PopupMenuItem(
                   child: RadioListTile(
-                    title: Text('編號排序'),
+                    title: Text('床室號排序'),
                     value: ListOrder.judge,
                     groupValue: order,
                     onChanged: (value) {
@@ -424,7 +424,7 @@ class _SupervisorState extends State<Supervisor> {
                 PopupMenuItem(
                   child: ListTile(
                     leading: Icon(Icons.account_circle),
-                    title: Text('帳戶管理'),
+                    title: Text('流水號管理'),
                     onTap: () {
                       // 開啟 guest list page
                       BlocProvider.of<GuestBloc>(context).add(GetGuestEvent());
